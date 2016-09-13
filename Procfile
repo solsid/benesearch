@@ -1,1 +1,1 @@
-benesearch: java -jar target/*.jar
+benesearch: java -jar target/benesearch-0.0.1-SNAPSHOT.jar
