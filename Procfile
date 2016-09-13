@@ -1,1 +1,1 @@
-benesearch: java $JAVA_OPTS -jar target/*.jar
+benesearch: java -jar target/*.jar
