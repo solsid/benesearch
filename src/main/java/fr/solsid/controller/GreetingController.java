@@ -39,7 +39,7 @@ public class GreetingController {
     private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
 
     @CrossOrigin(origins = "*")
-    @RequestMapping("/photos/export/all")
+    @RequestMapping("/photo/export/all")
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
 
         System.out.println("Started to export all photos.");
