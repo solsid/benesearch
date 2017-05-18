@@ -42,8 +42,11 @@ public class GreetingController {
 //        ByteArrayResource resource = new ByteArrayResource(fos.toString().getBytes());
         ByteArrayResource resource = new ByteArrayResource(imageBytes);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "image/png");
+
         return ResponseEntity.ok()
-                .headers(new HttpHeaders())
+                .headers(headers)
                 .contentLength(resource.contentLength())
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
