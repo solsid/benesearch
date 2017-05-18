@@ -90,8 +90,8 @@ public class GreetingController {
     }
 
     private byte[] fetchPhoto(String volunteerIdString) {
-        System.out.println("Fetching photo: " + volunteerIdString + " ...");
         String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
+        System.out.println("Fetching photo: " + volunteerIdString + " to URL: " + url + "...");
         RestTemplate restTemplate = new RestTemplate();
         byte[] photoBytes = restTemplate.getForObject(url, byte[].class);
         System.out.println("Fetched photo: " + volunteerIdString + ".");
