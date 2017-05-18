@@ -76,6 +76,7 @@ public class GreetingController {
 
             } catch (final HttpClientErrorException e) {
                 System.out.println("Error while fetching photo: " + volunteerIdString + ". Status code: " + e.getStatusCode());
+                System.out.println("404".equals(e.getStatusCode()));
                 if ("404".equals(e.getStatusCode())) {
                     volunteersWithoutPhotos.add(volunteerIdString);
                 }
