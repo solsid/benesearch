@@ -24,7 +24,7 @@ public class GreetingController {
                 String.format(template, name));
     }
 
-    @CrossOrigin(origins = "http://localhost:4200, https://benesearch-front.herokuapp.com")
+    @CrossOrigin(origins = "*")
     @RequestMapping("/photos/export/all")
     public String exportAllPhotos() {
         RestTemplate restTemplate = new RestTemplate();
