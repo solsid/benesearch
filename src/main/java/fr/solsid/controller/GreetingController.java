@@ -45,7 +45,7 @@ public class GreetingController {
         return ResponseEntity.ok()
                 .headers(new HttpHeaders())
                 .contentLength(resource.contentLength())
-                .contentType(MediaType.parseMediaType("application/zip"))
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
     }
 
