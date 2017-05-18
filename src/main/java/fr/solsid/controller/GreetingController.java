@@ -43,7 +43,7 @@ public class GreetingController {
 //        ByteArrayResource resource = new ByteArrayResource(imageBytes);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "image/png");
+        headers.add("Content-Type", "application/octet-stream");
 
         return ResponseEntity.ok()
                 .headers(headers)
