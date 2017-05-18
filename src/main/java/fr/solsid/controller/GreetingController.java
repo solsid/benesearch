@@ -107,6 +107,7 @@ public class GreetingController {
     }
 
     private byte[] createFileWithVoluntersWithoutPhotos(List<String> volunteersWithoutPhotos) throws IOException {
+        System.out.println("Number of volunteers without photos: " + volunteersWithoutPhotos.size());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         for (String volunteerId : volunteersWithoutPhotos) {
             bos.write((volunteerId + "\r\n").getBytes());
