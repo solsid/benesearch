@@ -44,6 +44,7 @@ public class GreetingController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/octet-stream");
+        headers.add("content-disposition", "attachment; filename=compressed_photo_export.zip");
 
         return ResponseEntity.ok()
                 .headers(headers)
