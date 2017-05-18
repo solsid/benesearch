@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -33,14 +35,15 @@ public class GreetingController {
                 String.format(template, name));
     }
 
+    // URL exemple: "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
+    private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%d_L.jpg";
+
     @CrossOrigin(origins = "*")
     @RequestMapping("/photos/export/all")
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
 
-        byte[] imageBytes = fetchImage();
-        ByteArrayOutputStream bos = zip(imageBytes);
-        ByteArrayResource resource = new ByteArrayResource(bos.toByteArray());
-//        ByteArrayResource resource = new ByteArrayResource(imageBytes);
+        byte[] zippedPhotos = fetchPhotosAndZip();
+        ByteArrayResource resource = new ByteArrayResource(zippedPhotos);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/octet-stream");
@@ -53,12 +56,60 @@ public class GreetingController {
                 .body(resource);
     }
 
-    private byte[] fetchImage() {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject("http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg", byte[].class);
+    private byte[] fetchPhotosAndZip() throws IOException {
 
+        List<String> volunteersWithoutPhotos = new ArrayList<String>();
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream zipOut = new ZipOutputStream(bos);
+
+        for (int i=2092000 ; i < 2093000 ; i++) {
+            String volunteerIdString = String.valueOf(i);
+            try {
+                byte[] photoBytes = fetchPhoto(i);
+
+                ZipEntry zipEntry = new ZipEntry(volunteerIdString);
+                zipOut.putNextEntry(zipEntry);
+                zipOut.write(photoBytes, 0, photoBytes.length);
+
+            } catch (final HttpClientErrorException e) {
+                if ("404".equals(e.getStatusCode())) {
+                    volunteersWithoutPhotos.add(volunteerIdString);
+                }
+            }
+        }
+
+        addVoluntersWithoutPhotosToZip(volunteersWithoutPhotos, zipOut);
+
+        zipOut.close();
+        bos.close();
+        return bos.toByteArray();
     }
 
+    private byte[] fetchPhoto(int volunteerId) {
+
+        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerId);
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(url, byte[].class);
+    }
+
+    private void addVoluntersWithoutPhotosToZip(List<String> volunteersWithoutPhotos, ZipOutputStream zipOut) throws IOException {
+
+        byte[] byteArray = createFileWithVoluntersWithoutPhotos(volunteersWithoutPhotos);
+        ZipEntry zipEntry = new ZipEntry("benevoles_sans_photos.txt");
+        zipOut.putNextEntry(zipEntry);
+        zipOut.write(byteArray, 0, byteArray.length);
+    }
+
+    private byte[] createFileWithVoluntersWithoutPhotos(List<String> volunteersWithoutPhotos) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (String volunteerId : volunteersWithoutPhotos) {
+            bos.write((volunteerId + "\r\n").getBytes());
+        }
+        return bos.toByteArray();
+    }
+
+    /*
     private ByteArrayOutputStream zip(byte[] bytes) throws IOException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -70,4 +121,5 @@ public class GreetingController {
         bos.close();
         return bos;
     }
+    */
 }
