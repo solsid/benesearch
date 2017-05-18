@@ -36,11 +36,13 @@ public class GreetingController {
     }
 
     // URL exemple: "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
-    private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%d_L.jpg";
+    private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
 
     @CrossOrigin(origins = "*")
     @RequestMapping("/photos/export/all")
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
+
+        System.out.println("Started to export all photos.");
 
         byte[] zippedPhotos = fetchPhotosAndZip();
         ByteArrayResource resource = new ByteArrayResource(zippedPhotos);
@@ -66,7 +68,7 @@ public class GreetingController {
         for (int i=2092000 ; i < 2093000 ; i++) {
             String volunteerIdString = String.valueOf(i);
             try {
-                byte[] photoBytes = fetchPhoto(i);
+                byte[] photoBytes = fetchPhoto(volunteerIdString);
 
                 ZipEntry zipEntry = new ZipEntry(volunteerIdString);
                 zipOut.putNextEntry(zipEntry);
@@ -86,11 +88,13 @@ public class GreetingController {
         return bos.toByteArray();
     }
 
-    private byte[] fetchPhoto(int volunteerId) {
-
-        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerId);
+    private byte[] fetchPhoto(String volunteerIdString) {
+        System.out.println("Fetching photo: " + volunteerIdString + " ...");
+        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(url, byte[].class);
+        byte[] photoBytes = restTemplate.getForObject(url, byte[].class);
+        System.out.println("Fetched photo: " + volunteerIdString + ".");
+        return photoBytes;
     }
 
     private void addVoluntersWithoutPhotosToZip(List<String> volunteersWithoutPhotos, ZipOutputStream zipOut) throws IOException {
