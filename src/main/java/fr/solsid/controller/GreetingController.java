@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -38,8 +38,8 @@ public class GreetingController {
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
 
         byte[] imageBytes = fetchImage();
-        FileOutputStream fos = zip(imageBytes);
-        ByteArrayResource resource = new ByteArrayResource(fos.toString().getBytes());
+        ByteArrayOutputStream bos = zip(imageBytes);
+        ByteArrayResource resource = new ByteArrayResource(bos.toByteArray());
 //        ByteArrayResource resource = new ByteArrayResource(imageBytes);
 
         HttpHeaders headers = new HttpHeaders();
@@ -58,14 +58,15 @@ public class GreetingController {
 
     }
 
-    private FileOutputStream zip(byte[] bytes) throws IOException {
-        FileOutputStream fos = new FileOutputStream("photo_export_compressed.zip");
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
+    private ByteArrayOutputStream zip(byte[] bytes) throws IOException {
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream zipOut = new ZipOutputStream(bos);
         ZipEntry zipEntry = new ZipEntry("photo_export");
         zipOut.putNextEntry(zipEntry);
         zipOut.write(bytes, 0, bytes.length);
         zipOut.close();
-        fos.close();
-        return fos;
+        bos.close();
+        return bos;
     }
 }
