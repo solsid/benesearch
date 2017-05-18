@@ -70,7 +70,7 @@ public class GreetingController {
             try {
                 byte[] photoBytes = fetchPhoto(volunteerIdString);
 
-                ZipEntry zipEntry = new ZipEntry(volunteerIdString);
+                ZipEntry zipEntry = new ZipEntry(volunteerIdString + ".jpg");
                 zipOut.putNextEntry(zipEntry);
                 zipOut.write(photoBytes, 0, photoBytes.length);
 
