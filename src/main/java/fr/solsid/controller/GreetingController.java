@@ -4,6 +4,7 @@ import fr.solsid.model.Greeting;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -76,8 +77,7 @@ public class GreetingController {
 
             } catch (final HttpClientErrorException e) {
                 System.out.println("Error while fetching photo: " + volunteerIdString + ". Status code: " + e.getStatusCode());
-                System.out.println("404".equals(e.getStatusCode()));
-                if ("404".equals(e.getStatusCode())) {
+                if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
                     volunteersWithoutPhotos.add(volunteerIdString);
                 }
             }
