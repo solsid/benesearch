@@ -38,8 +38,9 @@ public class GreetingController {
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
 
         byte[] imageBytes = fetchImage();
-        FileOutputStream fos = zip(imageBytes);
-        ByteArrayResource resource = new ByteArrayResource(fos.toString().getBytes());
+//        FileOutputStream fos = zip(imageBytes);
+//        ByteArrayResource resource = new ByteArrayResource(fos.toString().getBytes());
+        ByteArrayResource resource = new ByteArrayResource(imageBytes);
 
         return ResponseEntity.ok()
                 .headers(new HttpHeaders())
