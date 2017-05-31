@@ -87,7 +87,7 @@ public class GreetingController {
                     String team = nextLine[4];
 
                     try {
-                        fetchPhoto(id);
+                        pingPhoto(id);
 
                     } catch (final HttpClientErrorException e) {
                         if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
@@ -257,6 +257,13 @@ public class GreetingController {
         return photoBytes;
     }
 
+    private void pingPhoto(String volunteerIdString) {
+        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
+        System.out.println("Pinging photo: " + volunteerIdString + " to URL: " + url + "...");
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.headForHeaders(url);
+        System.out.println("Pinged photo: " + volunteerIdString + ".");
+    }
 
 
     /*
