@@ -153,16 +153,17 @@ public class GreetingController {
                             String email = nextLine[3];
                             String team = nextLine[4];
 
-                            try {
-                                byte[] photoBytes = fetchPhoto(id);
-                                photosZip.addPhoto(id, photoBytes);
+                            if (teamToExport.equals(team)) {
+                                try {
+                                    byte[] photoBytes = fetchPhoto(id);
+                                    photosZip.addPhoto(id, photoBytes);
 
-                            } catch (final HttpClientErrorException e) {
-                                if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                                    photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                                } catch (final HttpClientErrorException e) {
+                                    if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                                        photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                                    }
                                 }
                             }
-
                         }
 
                         ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
