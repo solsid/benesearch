@@ -5,6 +5,7 @@ import fr.solsid.model.Greeting;
 import fr.solsid.model.PhotosZip;
 import fr.solsid.model.Volunteer;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,6 +33,7 @@ public class GreetingController {
 
     private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
+    private SecureRandom random = new SecureRandom();
 
     @RequestMapping("/greeting")
     public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
@@ -62,8 +66,10 @@ public class GreetingController {
 
     @CrossOrigin(origins = "*")
     @RequestMapping(value="/upload", method= RequestMethod.POST)
-    public ResponseEntity<Resource> handleFileUpload(
+    public String handleFileUpload(
             @RequestParam("file") MultipartFile file) throws Exception {
+        final String requestId = new BigInteger(130, random).toString(32);
+
         if (!file.isEmpty()) {
             try {
                 // Read CSV
@@ -71,7 +77,8 @@ public class GreetingController {
                 String[] header = reader.readNext();
 
                 String [] nextLine;
-                PhotosZip photosZip = new PhotosZip();
+
+                PhotosZip photosZip = new PhotosZip(getExportFileFullPath(requestId));
 
                 // Read CSV and fetch Photos et Add to ZIP
                 while ((nextLine = reader.readNext()) != null) {
@@ -93,17 +100,9 @@ public class GreetingController {
 
                 }
 
-                ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
+                photosZip.close();
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.add("Content-Type", "application/octet-stream");
-                headers.add("content-disposition", "attachment; filename=compressed_photo_export.zip");
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .contentLength(resource.contentLength())
-                        .contentType(MediaType.parseMediaType("application/octet-stream"))
-                        .body(resource);
+                return requestId;
 
             } catch (Exception e) {
 //                return "You failed to upload " + name + " => " + e.getMessage();
@@ -113,6 +112,34 @@ public class GreetingController {
 //            return "You failed to upload " + name + " because the file was empty.";
             throw new Exception("epic fail");
         }
+    }
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping(value="/download", method= RequestMethod.GET)
+    public ResponseEntity<Resource> fetchPhotoExport(
+            @RequestParam("id") String requestId) throws Exception {
+
+        final File file = new File(getExportFileFullPath(requestId));
+        if (file.exists()) {
+            final FileInputStream fis = new FileInputStream(file);
+            InputStreamResource resource = new InputStreamResource(fis);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Type", "application/octet-stream");
+            headers.add("content-disposition", "attachment; filename=compressed_photo_export.zip");
+
+            ResponseEntity<Resource> response =  ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(resource.contentLength())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(resource);
+
+            file.delete();
+
+            return response;
+        }
+
+        return null;
     }
 
 /*    private byte[] fetchPhotosAndZip() throws IOException {
@@ -134,6 +161,10 @@ public class GreetingController {
 
         return photosZip.toByteArray();
     }*/
+
+    private String getExportFileFullPath(String requestId) {
+        return "/tmp/" + requestId;
+    }
 
     private byte[] fetchPhoto(String volunteerIdString) {
         String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);

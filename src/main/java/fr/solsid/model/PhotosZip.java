@@ -1,10 +1,6 @@
 package fr.solsid.model;
 
-import org.springframework.http.HttpStatus;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -15,13 +11,15 @@ import java.util.zip.ZipOutputStream;
  */
 public class PhotosZip {
 
-    private final ByteArrayOutputStream bos;
+    private final File file;
+    private final FileOutputStream fos;
     private final ZipOutputStream zipOut;
     private final VolunteersWithoutPhotos volunteersWithoutPhotos;
 
-    public PhotosZip() {
-        this.bos = new ByteArrayOutputStream();
-        this.zipOut = new ZipOutputStream(bos);
+    public PhotosZip(String fileFullPath) throws FileNotFoundException {
+        this.file = new File(fileFullPath + "_tmp");
+        this.fos = new FileOutputStream(file);
+        this.zipOut = new ZipOutputStream(fos);
         this.volunteersWithoutPhotos = new VolunteersWithoutPhotos();
     }
 
@@ -35,14 +33,14 @@ public class PhotosZip {
         volunteersWithoutPhotos.add(volunteer);
     }
 
-    public byte[] toByteArray() throws IOException {
+ /*   public byte[] toByteArray() throws IOException {
 
         addVolunteersWithoutPhotosToZip();
 
         close();
 
-        return bos.toByteArray();
-    }
+        return fos.toByteArray();
+    }*/
 
     private void addVolunteersWithoutPhotosToZip() throws IOException {
         final Map<String, List<Volunteer>> volunteersByTeam = volunteersWithoutPhotos.getVolunteersByTeam();
@@ -67,9 +65,12 @@ public class PhotosZip {
         return bos.toByteArray();
     }
 
-    private void close() throws IOException {
+    public void close() throws IOException {
+        addVolunteersWithoutPhotosToZip();
+
         zipOut.close();
-        bos.close();
+        fos.close();
+        file.delete();
     }
 
 
