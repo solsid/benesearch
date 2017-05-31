@@ -2,6 +2,8 @@ package fr.solsid.controller;
 
 import com.opencsv.CSVReader;
 import fr.solsid.model.Greeting;
+import fr.solsid.model.PhotosZip;
+import fr.solsid.model.Volunteer;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +40,7 @@ public class GreetingController {
     // URL exemple: "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
     private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
 
-    @CrossOrigin(origins = "*")
+/*    @CrossOrigin(origins = "*")
     @RequestMapping("/photo/export/all")
     public ResponseEntity<Resource> exportAllPhotos() throws IOException {
 
@@ -56,64 +58,82 @@ public class GreetingController {
                 .contentLength(resource.contentLength())
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
-    }
+    }*/
 
     @CrossOrigin(origins = "*")
     @RequestMapping(value="/upload", method= RequestMethod.POST)
-    public @ResponseBody String handleFileUpload(
-            @RequestParam("file") MultipartFile file){
+    public ResponseEntity<Resource> handleFileUpload(
+            @RequestParam("file") MultipartFile file) throws Exception {
         if (!file.isEmpty()) {
             try {
-                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"));
-                String[] firstLine = reader.readNext();
-                String firstValue = firstLine[0];
-//                byte[] bytes = file.getBytes();
-//               BufferedOutputStream stream =
-//                        new BufferedOutputStream(new FileOutputStream(new File(name + "-uploaded")));
-//                stream.write(bytes);
-//                stream.close();
-//                return "You successfully uploaded " + name + " into " + name + "-uploaded !";
-                return firstValue;
+                // Read CSV
+                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
+                String[] header = reader.readNext();
+
+                String [] nextLine;
+                PhotosZip photosZip = new PhotosZip();
+
+                // Read CSV and fetch Photos et Add to ZIP
+                while ((nextLine = reader.readNext()) != null) {
+                    String id = nextLine[0];
+                    String lastname = nextLine[1];
+                    String firstname = nextLine[2];
+                    String email = nextLine[3];
+                    String team = nextLine[4];
+
+                    try {
+                        byte[] photoBytes = fetchPhoto(id);
+                        photosZip.addPhoto(id, photoBytes);
+
+                    } catch (final HttpClientErrorException e) {
+                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                            photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                        }
+                    }
+
+                }
+
+                ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Type", "application/octet-stream");
+                headers.add("content-disposition", "attachment; filename=compressed_photo_export.zip");
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentLength(resource.contentLength())
+                        .contentType(MediaType.parseMediaType("application/octet-stream"))
+                        .body(resource);
+
             } catch (Exception e) {
 //                return "You failed to upload " + name + " => " + e.getMessage();
-                return "epic fail";
+                throw new Exception("epic fail", e);
             }
         } else {
 //            return "You failed to upload " + name + " because the file was empty.";
-            return "epic fail";
+            throw new Exception("epic fail");
         }
     }
 
-    private byte[] fetchPhotosAndZip() throws IOException {
+/*    private byte[] fetchPhotosAndZip() throws IOException {
 
-        List<String> volunteersWithoutPhotos = new ArrayList<String>();
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ZipOutputStream zipOut = new ZipOutputStream(bos);
+        PhotosZip photosZip = new PhotosZip();
 
         for (int i=2092000 ; i < 2093000 ; i++) {
             String volunteerIdString = String.valueOf(i);
             try {
                 byte[] photoBytes = fetchPhoto(volunteerIdString);
-
-                ZipEntry zipEntry = new ZipEntry(volunteerIdString + ".jpg");
-                zipOut.putNextEntry(zipEntry);
-                zipOut.write(photoBytes, 0, photoBytes.length);
+                photosZip.addPhoto(volunteerIdString, photoBytes);
 
             } catch (final HttpClientErrorException e) {
-                System.out.println("Error while fetching photo: " + volunteerIdString + ". Status code: " + e.getStatusCode());
                 if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                    volunteersWithoutPhotos.add(volunteerIdString);
+                    photosZip.addVolunteerWithoutPhoto(new Volunteer(volunteerIdString, null, null, null, null));
                 }
             }
         }
 
-        addVoluntersWithoutPhotosToZip(volunteersWithoutPhotos, zipOut);
-
-        zipOut.close();
-        bos.close();
-        return bos.toByteArray();
-    }
+        return photosZip.toByteArray();
+    }*/
 
     private byte[] fetchPhoto(String volunteerIdString) {
         String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
@@ -124,22 +144,7 @@ public class GreetingController {
         return photoBytes;
     }
 
-    private void addVoluntersWithoutPhotosToZip(List<String> volunteersWithoutPhotos, ZipOutputStream zipOut) throws IOException {
 
-        byte[] byteArray = createFileWithVoluntersWithoutPhotos(volunteersWithoutPhotos);
-        ZipEntry zipEntry = new ZipEntry("benevoles_sans_photos.txt");
-        zipOut.putNextEntry(zipEntry);
-        zipOut.write(byteArray, 0, byteArray.length);
-    }
-
-    private byte[] createFileWithVoluntersWithoutPhotos(List<String> volunteersWithoutPhotos) throws IOException {
-        System.out.println("Number of volunteers without photos: " + volunteersWithoutPhotos.size());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        for (String volunteerId : volunteersWithoutPhotos) {
-            bos.write((volunteerId + "\r\n").getBytes());
-        }
-        return bos.toByteArray();
-    }
 
     /*
     private ByteArrayOutputStream zip(byte[] bytes) throws IOException {
