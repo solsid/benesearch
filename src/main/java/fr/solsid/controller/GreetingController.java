@@ -64,7 +64,7 @@ public class GreetingController {
             @RequestParam("file") MultipartFile file){
         if (!file.isEmpty()) {
             try {
-                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"));
                 String[] firstLine = reader.readNext();
                 String firstValue = firstLine[0];
 //                byte[] bytes = file.getBytes();
