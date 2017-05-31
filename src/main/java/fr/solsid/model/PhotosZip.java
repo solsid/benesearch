@@ -56,6 +56,7 @@ public class PhotosZip {
     }
 
     private byte[] createFileWithVolunteersWithoutPhotos(List<Volunteer> volunteers) throws IOException {
+        System.out.println("Volunteers without photos: " + volunteers.size());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         bos.write(("Id;Nom;Prénom;Email;Equipe\r\n").getBytes());
