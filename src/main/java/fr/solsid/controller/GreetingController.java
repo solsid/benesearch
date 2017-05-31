@@ -71,43 +71,49 @@ public class GreetingController {
         final String requestId = new BigInteger(130, random).toString(32);
 
         if (!file.isEmpty()) {
-            try {
-                // Read CSV
-                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
-                String[] header = reader.readNext();
 
-                String [] nextLine;
-
-                PhotosZip photosZip = new PhotosZip(getExportFileFullPath(requestId));
-
-                // Read CSV and fetch Photos et Add to ZIP
-                while ((nextLine = reader.readNext()) != null) {
-                    String id = nextLine[0];
-                    String lastname = nextLine[1];
-                    String firstname = nextLine[2];
-                    String email = nextLine[3];
-                    String team = nextLine[4];
-
+            Thread thread = new Thread(){
+                public void run(){
                     try {
-                        byte[] photoBytes = fetchPhoto(id);
-                        photosZip.addPhoto(id, photoBytes);
+                        // Read CSV
+                        CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
+                        String[] header = reader.readNext();
 
-                    } catch (final HttpClientErrorException e) {
-                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                            photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                        String [] nextLine;
+
+                        PhotosZip photosZip = new PhotosZip(getExportFileFullPath(requestId));
+
+                        // Read CSV and fetch Photos et Add to ZIP
+                        while ((nextLine = reader.readNext()) != null) {
+                            String id = nextLine[0];
+                            String lastname = nextLine[1];
+                            String firstname = nextLine[2];
+                            String email = nextLine[3];
+                            String team = nextLine[4];
+
+                            try {
+                                byte[] photoBytes = fetchPhoto(id);
+                                photosZip.addPhoto(id, photoBytes);
+
+                            } catch (final HttpClientErrorException e) {
+                                if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                                    photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                                }
+                            }
+
                         }
-                    }
 
-                }
-
-                photosZip.close();
-
-                return requestId;
-
-            } catch (Exception e) {
+                        photosZip.close();
+                    } catch (Exception e) {
 //                return "You failed to upload " + name + " => " + e.getMessage();
-                throw new Exception("epic fail", e);
-            }
+                        this.interrupt();
+                    }
+                }
+            };
+
+            thread.start();
+
+            return requestId;
         } else {
 //            return "You failed to upload " + name + " because the file was empty.";
             throw new Exception("epic fail");
