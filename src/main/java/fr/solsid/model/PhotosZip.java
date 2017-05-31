@@ -47,11 +47,16 @@ public class PhotosZip {
     private void addVolunteersWithoutPhotosToZip() throws IOException {
         final Map<String, List<Volunteer>> volunteersByTeam = volunteersWithoutPhotos.getVolunteersByTeam();
 
-        for (String team : volunteersByTeam.keySet()) {
-            byte[] byteArray = createFileWithVolunteersWithoutPhotos(volunteersByTeam.get(team));
-            ZipEntry zipEntry = new ZipEntry("benevoles_" + team + "_sans_photos.txt");
+        if (!volunteersByTeam.isEmpty()) {
+            for (String team : volunteersByTeam.keySet()) {
+                byte[] byteArray = createFileWithVolunteersWithoutPhotos(volunteersByTeam.get(team));
+                ZipEntry zipEntry = new ZipEntry("benevoles_" + team + "_sans_photos.txt");
+                zipOut.putNextEntry(zipEntry);
+                zipOut.write(byteArray, 0, byteArray.length);
+            }
+        } else {
+            ZipEntry zipEntry = new ZipEntry("benevoles_sans_photos.txt");
             zipOut.putNextEntry(zipEntry);
-            zipOut.write(byteArray, 0, byteArray.length);
         }
     }
 
