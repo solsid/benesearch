@@ -159,6 +159,7 @@ public class GreetingController {
                                     photosZip.addPhoto(id, photoBytes);
 
                                 } catch (final HttpClientErrorException e) {
+                                    System.out.println("No photo found for: " + id);
                                     if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
                                         photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
                                     }
