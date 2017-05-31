@@ -11,15 +11,17 @@ import java.util.zip.ZipOutputStream;
  */
 public class PhotosZip {
 
-    private final File file;
-    private final FileOutputStream fos;
+//    private final File file;
+//    private final FileOutputStream fos;
+    private final ByteArrayOutputStream bos;
     private final ZipOutputStream zipOut;
     private final VolunteersWithoutPhotos volunteersWithoutPhotos;
 
-    public PhotosZip(String fileFullPath) throws FileNotFoundException {
-        this.file = new File(fileFullPath + "_tmp");
-        this.fos = new FileOutputStream(file);
-        this.zipOut = new ZipOutputStream(fos);
+    public PhotosZip() throws FileNotFoundException {
+ //       this.file = new File(fileFullPath + "_tmp");
+ //       this.fos = new FileOutputStream(file);
+        this.bos = new ByteArrayOutputStream();
+        this.zipOut = new ZipOutputStream(bos);
         this.volunteersWithoutPhotos = new VolunteersWithoutPhotos();
     }
 
@@ -33,14 +35,14 @@ public class PhotosZip {
         volunteersWithoutPhotos.add(volunteer);
     }
 
- /*   public byte[] toByteArray() throws IOException {
+    public byte[] toByteArray() throws IOException {
 
         addVolunteersWithoutPhotosToZip();
 
         close();
 
-        return fos.toByteArray();
-    }*/
+        return bos.toByteArray();
+    }
 
     private void addVolunteersWithoutPhotosToZip() throws IOException {
         final Map<String, List<Volunteer>> volunteersByTeam = volunteersWithoutPhotos.getVolunteersByTeam();
@@ -65,12 +67,12 @@ public class PhotosZip {
         return bos.toByteArray();
     }
 
-    public void close() throws IOException {
-        addVolunteersWithoutPhotosToZip();
+    private void close() throws IOException {
+       // addVolunteersWithoutPhotosToZip();
 
         zipOut.close();
-        fos.close();
-        file.delete();
+        bos.close();
+        //file.delete();
     }
 
 
