@@ -1,5 +1,6 @@
 package fr.solsid.controller;
 
+import com.opencsv.CSVReader;
 import fr.solsid.model.Greeting;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -7,12 +8,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -57,6 +56,32 @@ public class GreetingController {
                 .contentLength(resource.contentLength())
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .body(resource);
+    }
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping(value="/upload", method= RequestMethod.POST)
+    public @ResponseBody String handleFileUpload(
+            @RequestParam("file") MultipartFile file){
+        if (!file.isEmpty()) {
+            try {
+                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+                String[] firstLine = reader.readNext();
+                String firstValue = firstLine[0];
+//                byte[] bytes = file.getBytes();
+//               BufferedOutputStream stream =
+//                        new BufferedOutputStream(new FileOutputStream(new File(name + "-uploaded")));
+//                stream.write(bytes);
+//                stream.close();
+//                return "You successfully uploaded " + name + " into " + name + "-uploaded !";
+                return firstValue;
+            } catch (Exception e) {
+//                return "You failed to upload " + name + " => " + e.getMessage();
+                return "epic fail";
+            }
+        } else {
+//            return "You failed to upload " + name + " because the file was empty.";
+            return "epic fail";
+        }
     }
 
     private byte[] fetchPhotosAndZip() throws IOException {

@@ -40,6 +40,11 @@
 			<artifactId>json-path</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>3.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>
