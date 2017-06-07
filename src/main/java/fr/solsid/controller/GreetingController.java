@@ -175,6 +175,83 @@ public class GreetingController {
     }
 
     @CrossOrigin(origins = "*")
+    @RequestMapping(value="/exportPhotosByHundred", method= RequestMethod.POST)
+    public ResponseEntity<Resource> exportPhotosByHundred(
+            @RequestParam("file") MultipartFile file, @RequestParam("part") Integer part) throws Exception {
+
+        if (!file.isEmpty()) {
+
+            try {
+
+                // Open thread executor
+                ExecutorService executor = Executors.newFixedThreadPool(5);
+
+                // Read CSV
+                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
+                String[] header = reader.readNext();
+
+                String [] nextLine;
+
+                PhotosZip photosZip = new PhotosZip();
+
+                int lineCounter = 0;
+                List<Volunteer> volunteersToFetch = new ArrayList<>();
+
+                int start = (part * 100) - 100;
+                int end = (part * 100) - 1;
+
+                // Read CSV and fetch Photos et Add to ZIP
+                while ((nextLine = reader.readNext()) != null && lineCounter <= end) {
+                    String id = nextLine[0];
+                    String lastname = nextLine[1];
+                    String firstname = nextLine[2];
+                    String email = nextLine[3];
+                    String team = nextLine[4];
+
+                    if (lineCounter >= start) {
+                        Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
+                        volunteersToFetch.add(volunteer);
+                    }
+
+                    lineCounter++;
+                }
+
+                if (!volunteersToFetch.isEmpty()) {
+                    fetchPhotosInThread(volunteersToFetch, photosZip, executor);
+
+                    // Shutdown threads
+                    executor.shutdown();
+                    try {
+                        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                    } catch (InterruptedException e) {
+                        throw new Exception("epic fail", e);
+                    }
+                    System.out.println("Finished all threads");
+
+                    ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
+
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.add("Content-Type", "application/octet-stream");
+                    headers.add("content-disposition", "attachment; filename=compressed_all_photo_export.zip");
+
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .contentLength(resource.contentLength())
+                            .contentType(MediaType.parseMediaType("application/octet-stream"))
+                            .body(resource);
+                } else {
+                    return ResponseEntity.badRequest().body(null);
+                }
+
+            } catch (Exception e) {
+                throw new Exception("epic fail", e);
+            }
+        } else {
+            throw new Exception("epic fail");
+        }
+    }
+
+    @CrossOrigin(origins = "*")
     @RequestMapping(value="/exportWithoutPhoto", method= RequestMethod.POST)
     public ResponseEntity<Resource> exportVolunteersWithoutPhoto(
             @RequestParam("file") MultipartFile file) throws Exception {
