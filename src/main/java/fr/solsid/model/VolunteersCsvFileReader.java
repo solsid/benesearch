@@ -5,7 +5,7 @@ import com.opencsv.CSVReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Created by Arnaud on 07/06/2017.
@@ -49,5 +49,27 @@ public class VolunteersCsvFileReader {
         }
 
         return volunteersPools;
+    }
+
+    public List<String> readTeams(InputStream inputStream) throws IOException {
+        Set<String> teamsSet = new HashSet<>();
+
+        // Read CSV
+        CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "ISO-8859-1"), ';');
+        String[] header = reader.readNext();
+
+        String [] nextLine;
+
+        // Read CSV and fetch Photos et Add to ZIP
+        while ((nextLine = reader.readNext()) != null) {
+
+            String team = nextLine[4];
+            teamsSet.add(team);
+        }
+
+        List<String> teams = new ArrayList<>(teamsSet);
+        Collections.sort(teams);
+
+        return teams;
     }
 }

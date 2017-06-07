@@ -32,4 +32,8 @@ public class Pool<T> implements Iterable<T> {
     public Iterator<T> iterator() {
         return elements.iterator();
     }
+
+    public List<T> asList() {
+        return new ArrayList<>(elements);
+    }
 }

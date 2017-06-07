@@ -436,4 +436,38 @@ public class GreetingController {
             System.out.println("\"" + team + "\",");
         }
     }*/
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping(value="/getAllTeams", method= RequestMethod.POST)
+    public ResponseEntity<Teams> exportTeamPhoto(
+            @RequestParam("file") MultipartFile file) throws Exception {
+
+        if (!file.isEmpty()) {
+
+            try {
+
+                // Open thread executor
+                ExecutorService executor = Executors.newFixedThreadPool(5);
+
+                VolunteersCsvFileReader reader = new VolunteersCsvFileReader();
+
+                List<String> teamsList = reader.readTeams(file.getInputStream());
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Type", "application/json");
+
+                Teams teams = new Teams();
+                teams.setTeams(teamsList.toArray(new String[teamsList.size()]));
+
+                return new ResponseEntity<>(teams, headers,
+                        HttpStatus.OK);
+
+            } catch (Exception e) {
+                throw new Exception("epic fail", e);
+            }
+        } else {
+//            return "You failed to upload " + name + " because the file was empty.";
+            throw new Exception("epic fail");
+        }
+    }
 }
