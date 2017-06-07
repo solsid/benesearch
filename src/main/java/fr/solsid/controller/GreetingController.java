@@ -303,7 +303,7 @@ public class GreetingController {
 
                 VolunteersCsvFileReader reader = new VolunteersCsvFileReader();
 
-                Pools<Volunteer> volunteersPools = reader.read(file.getInputStream(), 100, new VolunteerTeamFilter(teamToExport));
+                Pools<Volunteer> volunteersPools = reader.read(file.getInputStream(), 20, new VolunteerTeamFilter(teamToExport));
 
                 PhotosZip photosZip = new PhotosZip();
 
