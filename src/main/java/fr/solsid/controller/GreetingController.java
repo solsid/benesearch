@@ -100,7 +100,7 @@ public class GreetingController {
                     Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
                     volunteersByTen.add(volunteer);
 
-                    if (lineCounter % 10 == 0) {
+                    if (lineCounter % 100 == 0) {
                         final List<Volunteer> volunteersToFetch = new ArrayList<>(volunteersByTen);
                         volunteersByTen.clear();
 
