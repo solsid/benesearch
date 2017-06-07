@@ -1,0 +1,46 @@
+[
+    {
+        "print_id" : "1",
+        "batch" : {
+            "id" : "1",
+            "number" : "2",
+            "date" : "2017-04-13",
+            "status" : { 
+                "id" : "1",
+                "label" : "printed"
+            }
+        },
+        "lastValidation" : {
+            "id" : "1",
+            "date" : "2017-05-16",
+            "validation" : {
+                "id" : "1",
+                "label" : "OK"
+            }
+        },
+        "attribution" : {
+            "id" : "1",
+            "date" : "2017-04-26",
+            "leader" : false, 
+            "volunteer" : {
+                "id" : "1",
+                "firstname" : "Arnaud",
+                "surname" : "Oisel",
+                "edition????" : "year?????"
+            },
+            "team" : {
+                "id" : "1",
+                "name" : "Backline",
+                "accessRights" : [
+                    { "id" : "1",
+                    "letter" : "S",
+                    "label" : "stage"}
+                ]
+            }
+        }
+    },
+    {"name": "John Doe", "team": "Backline", "rights": "A"},
+    {"name": "Jane Bla", "team": "Propreté", "rights": "T M"},
+    {"name" : "Martin Dupont", "team": "Rappro boisson", "rights" : "P S M"},
+    {"name" : "Mélanie Tran", "team": "Merchandising", "rights" : "P"}
+]

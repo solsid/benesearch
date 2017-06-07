@@ -1,10 +1,7 @@
 package fr.solsid.controller;
 
 import com.opencsv.CSVReader;
-import fr.solsid.model.Greeting;
-import fr.solsid.model.PhotoFetcher;
-import fr.solsid.model.PhotosZip;
-import fr.solsid.model.Volunteer;
+import fr.solsid.model.*;
 import fr.solsid.thread.WorkerThread;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
@@ -146,7 +143,7 @@ public class GreetingController {
         }
     }
 
-    private void fetchPhotosInThread(List<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
+    private void fetchPhotosInThread(Iterable<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
 
         Runnable worker = new Runnable() {
             @Override
@@ -186,38 +183,14 @@ public class GreetingController {
                 // Open thread executor
                 ExecutorService executor = Executors.newFixedThreadPool(5);
 
-                // Read CSV
-                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
-                String[] header = reader.readNext();
+                VolunteersCsvFileReader reader = new VolunteersCsvFileReader();
 
-                String [] nextLine;
+                Pools<Volunteer> volunteersPools = reader.read(file.getInputStream(), 100);
 
                 PhotosZip photosZip = new PhotosZip();
 
-                int lineCounter = 0;
-                List<Volunteer> volunteersToFetch = new ArrayList<>();
-
-                int start = (part * 100) - 100;
-                int end = (part * 100) - 1;
-
-                // Read CSV and fetch Photos et Add to ZIP
-                while ((nextLine = reader.readNext()) != null && lineCounter <= end) {
-                    String id = nextLine[0];
-                    String lastname = nextLine[1];
-                    String firstname = nextLine[2];
-                    String email = nextLine[3];
-                    String team = nextLine[4];
-
-                    if (lineCounter >= start) {
-                        Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
-                        volunteersToFetch.add(volunteer);
-                    }
-
-                    lineCounter++;
-                }
-
-                if (!volunteersToFetch.isEmpty()) {
-                    fetchPhotosInThread(volunteersToFetch, photosZip, executor);
+                if (volunteersPools.size() >= part) {
+                    fetchPhotosInThread(volunteersPools.getPool(part - 1), photosZip, executor);
 
                     // Shutdown threads
                     executor.shutdown();
@@ -323,63 +296,45 @@ public class GreetingController {
 
         if (!file.isEmpty()) {
 
- //           Thread thread = new Thread(){
- //               public void run(){
-                    try {
-                        // Read CSV
-                        CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
-                        String[] header = reader.readNext();
+            try {
 
-                        String [] nextLine;
+                // Open thread executor
+                ExecutorService executor = Executors.newFixedThreadPool(5);
 
-                        PhotosZip photosZip = new PhotosZip(/*getExportFileFullPath(requestId)*/);
-                        PhotoFetcher photoFetcher = new PhotoFetcher();
+                VolunteersCsvFileReader reader = new VolunteersCsvFileReader();
 
-                        // Read CSV and fetch Photos et Add to ZIP
-                        while ((nextLine = reader.readNext()) != null) {
-                            String id = nextLine[0];
-                            String lastname = nextLine[1];
-                            String firstname = nextLine[2];
-                            String email = nextLine[3];
-                            String team = nextLine[4];
+                Pools<Volunteer> volunteersPools = reader.read(file.getInputStream(), 100, new VolunteerTeamFilter(teamToExport));
 
-                            if (teamToExport.equals(team)) {
-                                try {
-                                    byte[] photoBytes = photoFetcher.fetchPhoto(id);
-                                    photosZip.addPhoto(id, photoBytes);
+                PhotosZip photosZip = new PhotosZip();
 
-                                } catch (final HttpClientErrorException e) {
-                                    System.out.println("No photo found for: " + id);
-                                    if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                                        photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
-                                    }
-                                }
-                            }
-                        }
+                for (Pool<Volunteer> volunteerPool : volunteersPools) {
+                    fetchPhotosInThread(volunteerPool, photosZip, executor);
+                }
 
-                        ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
+                // Shutdown threads
+                executor.shutdown();
+                try {
+                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    throw new Exception("epic fail", e);
+                }
+                System.out.println("Finished all threads");
 
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.add("Content-Type", "application/octet-stream");
-                        headers.add("content-disposition", "attachment; filename=compressed_photo_" + teamToExport + "export.zip");
+                ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
 
-                       return ResponseEntity.ok()
-                                .headers(headers)
-                                .contentLength(resource.contentLength())
-                                .contentType(MediaType.parseMediaType("application/octet-stream"))
-                                .body(resource);
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Type", "application/octet-stream");
+                headers.add("content-disposition", "attachment; filename=compressed_photo_" + teamToExport + "export.zip");
 
-                    } catch (Exception e) {
-//                return "You failed to upload " + name + " => " + e.getMessage();
-//                        this.interrupt();
-                        throw new Exception("epic fail", e);
-                    }
-//                }
-//            };
+               return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentLength(resource.contentLength())
+                        .contentType(MediaType.parseMediaType("application/octet-stream"))
+                        .body(resource);
 
-//            thread.start();
-
-//            return requestId;
+            } catch (Exception e) {
+                throw new Exception("epic fail", e);
+            }
         } else {
 //            return "You failed to upload " + name + " because the file was empty.";
             throw new Exception("epic fail");
