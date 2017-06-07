@@ -2,8 +2,10 @@ package fr.solsid.controller;
 
 import com.opencsv.CSVReader;
 import fr.solsid.model.Greeting;
+import fr.solsid.model.PhotoFetcher;
 import fr.solsid.model.PhotosZip;
 import fr.solsid.model.Volunteer;
+import fr.solsid.thread.WorkerThread;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -20,6 +22,9 @@ import java.io.*;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -40,8 +45,6 @@ public class GreetingController {
                 String.format(template, name));
     }
 
-    // URL exemple: "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
-    private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
 
 /*    @CrossOrigin(origins = "*")
     @RequestMapping("/photo/export/all")
@@ -64,6 +67,100 @@ public class GreetingController {
     }*/
 
     @CrossOrigin(origins = "*")
+    @RequestMapping(value="/exportAllPhotos", method= RequestMethod.POST)
+    public ResponseEntity<Resource> exportAllPhotos(
+            @RequestParam("file") MultipartFile file) throws Exception {
+
+        if (!file.isEmpty()) {
+
+            try {
+
+                // Open thread executor
+                ExecutorService executor = Executors.newFixedThreadPool(10);
+
+                // Read CSV
+                CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), "ISO-8859-1"), ';');
+                String[] header = reader.readNext();
+
+                String [] nextLine;
+
+                PhotosZip photosZip = new PhotosZip();
+
+                int lineCounter = 0;
+                List<Volunteer> volunteersByTen = new ArrayList<>();
+
+                // Read CSV and fetch Photos et Add to ZIP
+                while ((nextLine = reader.readNext()) != null) {
+                    String id = nextLine[0];
+                    String lastname = nextLine[1];
+                    String firstname = nextLine[2];
+                    String email = nextLine[3];
+                    String team = nextLine[4];
+
+                    Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
+                    volunteersByTen.add(volunteer);
+
+                    if (lineCounter % 10 == 0) {
+                        final List<Volunteer> volunteersToFetch = new ArrayList<>(volunteersByTen);
+                        volunteersByTen.clear();
+
+                        Runnable worker = new Runnable() {
+                            @Override
+                            public void run() {
+
+                                for (Volunteer volunteerToFetch : volunteersToFetch) {
+                                    try {
+                                        byte[] photoBytes = new PhotoFetcher().fetchPhoto(id);
+                                        photosZip.addPhoto(id, photoBytes);
+
+                                    } catch (final HttpClientErrorException e) {
+                                        System.out.println("No photo found for: " + id);
+                                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                                            photosZip.addVolunteerWithoutPhoto(volunteer);
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                            }
+                        };
+                        executor.execute(worker);
+                    }
+
+                    lineCounter++;
+                }
+
+                // Shutdown threads
+                executor.shutdown();
+                try {
+                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    throw new Exception("epic fail", e);
+                }
+                System.out.println("Finished all threads");
+
+                ByteArrayResource resource = new ByteArrayResource(photosZip.toByteArray());
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Content-Type", "application/octet-stream");
+                headers.add("content-disposition", "attachment; filename=compressed_all_photo_export.zip");
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentLength(resource.contentLength())
+                        .contentType(MediaType.parseMediaType("application/octet-stream"))
+                        .body(resource);
+
+            } catch (Exception e) {
+                throw new Exception("epic fail", e);
+            }
+        } else {
+            throw new Exception("epic fail");
+        }
+    }
+
+    @CrossOrigin(origins = "*")
     @RequestMapping(value="/exportWithoutPhoto", method= RequestMethod.POST)
     public ResponseEntity<Resource> exportVolunteersWithoutPhoto(
             @RequestParam("file") MultipartFile file) throws Exception {
@@ -77,6 +174,7 @@ public class GreetingController {
                 String [] nextLine;
 
                 PhotosZip photosZip = new PhotosZip();
+                PhotoFetcher photoFetcher = new PhotoFetcher();
 
                 // Read CSV and fetch Photos et Add to ZIP
                 while ((nextLine = reader.readNext()) != null) {
@@ -87,7 +185,7 @@ public class GreetingController {
                     String team = nextLine[4];
 
                     try {
-                        pingPhoto(id);
+                        photoFetcher.pingPhoto(id);
 
                     } catch (final HttpClientErrorException e) {
                         if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
@@ -144,6 +242,7 @@ public class GreetingController {
                         String [] nextLine;
 
                         PhotosZip photosZip = new PhotosZip(/*getExportFileFullPath(requestId)*/);
+                        PhotoFetcher photoFetcher = new PhotoFetcher();
 
                         // Read CSV and fetch Photos et Add to ZIP
                         while ((nextLine = reader.readNext()) != null) {
@@ -155,7 +254,7 @@ public class GreetingController {
 
                             if (teamToExport.equals(team)) {
                                 try {
-                                    byte[] photoBytes = fetchPhoto(id);
+                                    byte[] photoBytes = photoFetcher.fetchPhoto(id);
                                     photosZip.addPhoto(id, photoBytes);
 
                                 } catch (final HttpClientErrorException e) {
@@ -248,22 +347,7 @@ public class GreetingController {
         return "/tmp/" + requestId;
     }
 
-    private byte[] fetchPhoto(String volunteerIdString) {
-        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
-        System.out.println("Fetching photo: " + volunteerIdString + " to URL: " + url + "...");
-        RestTemplate restTemplate = new RestTemplate();
-        byte[] photoBytes = restTemplate.getForObject(url, byte[].class);
-        System.out.println("Fetched photo: " + volunteerIdString + ".");
-        return photoBytes;
-    }
 
-    private void pingPhoto(String volunteerIdString) {
-        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
-        System.out.println("Pinging photo: " + volunteerIdString + " to URL: " + url + "...");
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.headForHeaders(url);
-        System.out.println("Pinged photo: " + volunteerIdString + ".");
-    }
 
 
     /*

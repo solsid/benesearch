@@ -25,17 +25,17 @@ public class PhotosZip {
         this.volunteersWithoutPhotos = new VolunteersWithoutPhotos();
     }
 
-    public void addPhoto(String volunteerId, byte[] photoBytes) throws IOException {
+    public synchronized void addPhoto(String volunteerId, byte[] photoBytes) throws IOException {
         ZipEntry zipEntry = new ZipEntry(volunteerId + ".jpg");
         zipOut.putNextEntry(zipEntry);
         zipOut.write(photoBytes, 0, photoBytes.length);
     }
 
-    public void addVolunteerWithoutPhoto(Volunteer volunteer) {
+    public synchronized void addVolunteerWithoutPhoto(Volunteer volunteer) {
         volunteersWithoutPhotos.add(volunteer);
     }
 
-    public byte[] toByteArray() throws IOException {
+    public synchronized byte[] toByteArray() throws IOException {
 
         addVolunteersWithoutPhotosToZip();
 
