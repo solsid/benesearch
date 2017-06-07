@@ -109,14 +109,16 @@ public class GreetingController {
                             public void run() {
 
                                 for (Volunteer volunteerToFetch : volunteersToFetch) {
+                                    String volunteerId = volunteerToFetch.id();
+
                                     try {
-                                        byte[] photoBytes = new PhotoFetcher().fetchPhoto(id);
-                                        photosZip.addPhoto(id, photoBytes);
+                                        byte[] photoBytes = new PhotoFetcher().fetchPhoto(volunteerId);
+                                        photosZip.addPhoto(volunteerId, photoBytes);
 
                                     } catch (final HttpClientErrorException e) {
-                                        System.out.println("No photo found for: " + id);
+                                        System.out.println("No photo found for: " + volunteerId);
                                         if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                                            photosZip.addVolunteerWithoutPhoto(volunteer);
+                                            photosZip.addVolunteerWithoutPhoto(volunteerToFetch);
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();
