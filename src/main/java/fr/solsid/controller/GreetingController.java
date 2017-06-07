@@ -87,7 +87,7 @@ public class GreetingController {
                 PhotosZip photosZip = new PhotosZip();
 
                 int lineCounter = 0;
-                List<Volunteer> volunteersByTen = new ArrayList<>();
+                List<Volunteer> volunteersGrouped = new ArrayList<>();
 
                 // Read CSV and fetch Photos et Add to ZIP
                 while ((nextLine = reader.readNext()) != null) {
@@ -98,39 +98,23 @@ public class GreetingController {
                     String team = nextLine[4];
 
                     Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
-                    volunteersByTen.add(volunteer);
+                    volunteersGrouped.add(volunteer);
 
-                    if (lineCounter % 100 == 0) {
-                        final List<Volunteer> volunteersToFetch = new ArrayList<>(volunteersByTen);
-                        volunteersByTen.clear();
+                    if (lineCounter == 0 || lineCounter % 100 == 0) {
+                        final List<Volunteer> volunteersToFetch = new ArrayList<>(volunteersGrouped);
+                        volunteersGrouped.clear();
 
-                        Runnable worker = new Runnable() {
-                            @Override
-                            public void run() {
-
-                                for (Volunteer volunteerToFetch : volunteersToFetch) {
-                                    String volunteerId = volunteerToFetch.id();
-
-                                    try {
-                                        byte[] photoBytes = new PhotoFetcher().fetchPhoto(volunteerId);
-                                        photosZip.addPhoto(volunteerId, photoBytes);
-
-                                    } catch (final HttpClientErrorException e) {
-                                        System.out.println("No photo found for: " + volunteerId);
-                                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                                            photosZip.addVolunteerWithoutPhoto(volunteerToFetch);
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                            }
-                        };
-                        executor.execute(worker);
+                        fetchPhotosInThread(volunteersToFetch, photosZip, executor);
                     }
 
                     lineCounter++;
+                }
+
+                if (!volunteersGrouped.isEmpty()) {
+                    final List<Volunteer> volunteersToFetch = new ArrayList<>(volunteersGrouped);
+                    volunteersGrouped.clear();
+
+                    fetchPhotosInThread(volunteersToFetch, photosZip, executor);
                 }
 
                 // Shutdown threads
@@ -160,6 +144,34 @@ public class GreetingController {
         } else {
             throw new Exception("epic fail");
         }
+    }
+
+    private void fetchPhotosInThread(List<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
+
+        Runnable worker = new Runnable() {
+            @Override
+            public void run() {
+
+                for (Volunteer volunteerToFetch : volunteersToFetch) {
+                    String volunteerId = volunteerToFetch.id();
+
+                    try {
+                        byte[] photoBytes = new PhotoFetcher().fetchPhoto(volunteerId);
+                        photosZip.addPhoto(volunteerId, photoBytes);
+
+                    } catch (final HttpClientErrorException e) {
+                        System.out.println("No photo found for: " + volunteerId);
+                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                            photosZip.addVolunteerWithoutPhoto(volunteerToFetch);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        };
+        executor.execute(worker);
     }
 
     @CrossOrigin(origins = "*")
