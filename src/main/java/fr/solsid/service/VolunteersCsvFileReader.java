@@ -54,7 +54,6 @@ public class VolunteersCsvFileReader {
             Incrementable<Volunteer> volunteersCollection,
             VolunteerFilter... filters)
             throws IOException {
-        System.out.println("Starting reading file...");
 
         // Read CSV
         CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "ISO-8859-1"), ';');
@@ -69,23 +68,18 @@ public class VolunteersCsvFileReader {
             String firstname = nextLine[2];
             String email = nextLine[3];
             String team = nextLine[4];
-            System.out.println("Reading line... " + "ID = " + id);
 
             Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
 
-            System.out.println(filters.length);
-
-            if (filters != null) {
+            if (filters != null && filters.length > 0) {
                 for (VolunteerFilter filter : filters) {
                     if (filter.keep(volunteer)) {
                         volunteersCollection.add(volunteer);
-                        System.out.println("Adding volunteer " + id);
                         break;
                     }
                 }
             } else {
                 volunteersCollection.add(volunteer);
-                System.out.println("Adding volunteer " + id);
             }
         }
     }
