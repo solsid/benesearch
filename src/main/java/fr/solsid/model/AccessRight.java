@@ -1,5 +1,7 @@
 package fr.solsid.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public enum AccessRight {
         this.letter = letter;
     }
 
+    @JsonValue
     public String getLetter() {
         return this.letter;
     }
