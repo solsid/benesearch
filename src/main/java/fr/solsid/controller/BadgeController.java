@@ -52,6 +52,8 @@ public class BadgeController {
 
             List<VolunteerWithAccessRights> result = associateAccessRightsToVolunteers(volunteers, assigmentAccessRights);
 
+            System.out.println("Returning " + result.size() + " volunteers with access rights.");
+            
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Type", "application/json");
 

@@ -65,6 +65,8 @@ public class AccessRightsFileReader {
             }
         }
 
+        System.out.println("Found " + result.size() + " assignements.");
+
         return result;
     }
 

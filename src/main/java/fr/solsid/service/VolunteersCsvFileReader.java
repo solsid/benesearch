@@ -45,6 +45,7 @@ public class VolunteersCsvFileReader {
 
         readAndAddToCollection(inputStream, volunteersCollection, filters);
 
+        System.out.println("Found " + volunteersCollection.size() + " volunteers");
         return volunteersCollection;
     }
 
