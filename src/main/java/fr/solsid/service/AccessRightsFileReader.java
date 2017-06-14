@@ -2,10 +2,10 @@ package fr.solsid.service;
 
 import fr.solsid.model.AccessRight;
 import fr.solsid.model.Assignment;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class AccessRightsFileReader {
 
         Map<Assignment, Set<AccessRight>> result = new HashMap<>();
 
-        Workbook workbook = new XSSFWorkbook(inputStream);
+        Workbook workbook = new HSSFWorkbook(inputStream);
         Sheet datatypeSheet = workbook.getSheetAt(0);
         Iterator<Row> iterator = datatypeSheet.iterator();
 

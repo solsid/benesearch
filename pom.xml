@@ -47,7 +47,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
+			<artifactId>poi</artifactId>
 			<version>3.16</version>
 		</dependency>
 	</dependencies>
