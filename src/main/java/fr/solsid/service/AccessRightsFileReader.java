@@ -83,6 +83,7 @@ public class AccessRightsFileReader {
             }
         }
         return assignments;
+
     }
 
     private Set<AccessRight> extractAccessRights(Row row) {
