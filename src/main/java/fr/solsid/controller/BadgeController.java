@@ -76,9 +76,6 @@ public class BadgeController {
         List<VolunteerWithAccessRights> result = new ArrayList<>();
         for (Volunteer volunteer : volunteers) {
             Set<AccessRight> accessRights = assignmentAccessRights.get(volunteer.getAssignment());
-            if (accessRights != null) {
-                System.out.println("Found matching assignment for volunteer: " + volunteer.getId());
-            }
             result.add(new VolunteerWithAccessRights(volunteer, accessRights));
         }
         return result;
