@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by Arnaud on 07/06/2017.
  */
-public class Pools<T> implements Iterable<Pool<T>> {
+public class Pools<T> implements Iterable<Pool<T>>, Incrementable<T> {
 
     private final List<Pool<T>> pools = new ArrayList<>();
     private int maxPoolSize;
@@ -16,15 +16,17 @@ public class Pools<T> implements Iterable<Pool<T>> {
         this.maxPoolSize = maxPoolSize;
     }
 
-    public void add(T element) {
+    @Override
+    public boolean add(T element) {
         for (Pool<T> pool : pools) {
             if (pool.add(element)) {
-                return;
+                return true;
             }
         }
         Pool<T> newPool = new Pool<>(maxPoolSize);
         newPool.add(element);
         pools.add(newPool);
+        return true;
     }
 
     public boolean isEmpty() {

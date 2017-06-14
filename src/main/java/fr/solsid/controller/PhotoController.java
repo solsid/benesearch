@@ -71,7 +71,7 @@ public class PhotoController {
                     String email = nextLine[3];
                     String team = nextLine[4];
 
-                    Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
+                    Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
                     volunteersGrouped.add(volunteer);
 
                     if (lineCounter == 0 || lineCounter % 100 == 0) {
@@ -206,7 +206,7 @@ public class PhotoController {
 
                     } catch (final HttpClientErrorException e) {
                         if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
-                            photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team));
+                            photosZip.addVolunteerWithoutPhoto(new Volunteer(id, lastname, firstname, email, team, false));
                         }
                     }
 

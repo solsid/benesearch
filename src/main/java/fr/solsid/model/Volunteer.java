@@ -9,14 +9,14 @@ public class Volunteer implements Comparable<Volunteer>{
     private final String lastname;
     private final String firstname;
     private final String email;
-    private final String team;
+    private final Assignment assignment;
 
-    public Volunteer(String id, String lastname, String firstName, String email, String team) {
+    public Volunteer(String id, String lastname, String firstName, String email, String team, boolean leader) {
         this.id = id;
         this.lastname = id;
         this.firstname = firstName;
         this.email = email;
-        this.team = team;
+        this.assignment = new Assignment(team, leader);
     }
 
     public String id() {
@@ -27,7 +27,7 @@ public class Volunteer implements Comparable<Volunteer>{
         return lastname;
     }
 
-    public String frstName() {
+    public String firstName() {
         return firstname;
     }
 
@@ -36,7 +36,15 @@ public class Volunteer implements Comparable<Volunteer>{
     }
 
     public String team() {
-        return team;
+        return assignment.team();
+    }
+
+    public boolean leader() {
+        return assignment.leader();
+    }
+
+    public Assignment assignment() {
+        return new Assignment(this.assignment);
     }
 
     @Override
@@ -50,7 +58,8 @@ public class Volunteer implements Comparable<Volunteer>{
         if (lastname != null ? !lastname.equals(volunteer.lastname) : volunteer.lastname != null) return false;
         if (firstname != null ? !firstname.equals(volunteer.firstname) : volunteer.firstname != null) return false;
         if (email != null ? !email.equals(volunteer.email) : volunteer.email != null) return false;
-        return !(team != null ? !team.equals(volunteer.team) : volunteer.team != null);
+        return !(assignment != null ? !assignment.equals(volunteer.assignment) : volunteer.assignment != null);
+
     }
 
     @Override
@@ -59,7 +68,7 @@ public class Volunteer implements Comparable<Volunteer>{
         result = 31 * result + (lastname != null ? lastname.hashCode() : 0);
         result = 31 * result + (firstname != null ? firstname.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (team != null ? team.hashCode() : 0);
+        result = 31 * result + (assignment != null ? assignment.hashCode() : 0);
         return result;
     }
 

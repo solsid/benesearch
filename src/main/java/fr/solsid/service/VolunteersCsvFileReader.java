@@ -1,9 +1,7 @@
 package fr.solsid.service;
 
 import com.opencsv.CSVReader;
-import fr.solsid.model.Pools;
-import fr.solsid.model.Volunteer;
-import fr.solsid.model.VolunteerFilter;
+import fr.solsid.model.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,20 +15,50 @@ import java.util.*;
 @Service
 public class VolunteersCsvFileReader {
 
-    public Pools<Volunteer> read(InputStream inputStream, int maxPoolSize) throws IOException {
+    public Pools<Volunteer> read(
+            InputStream inputStream,
+            int maxPoolSize
+    ) throws IOException {
 
         return read(inputStream, maxPoolSize, null);
     }
 
-    public Pools<Volunteer> read(InputStream inputStream, int maxPoolSize, VolunteerFilter... filters) throws IOException {
+    public Pools<Volunteer> read(
+            InputStream inputStream,
+            int maxPoolSize,
+            VolunteerFilter... filters
+    ) throws IOException {
+
+        Pools<Volunteer> volunteersPools = new Pools<>(maxPoolSize);
+
+        readAndAddToCollection(inputStream, volunteersPools, filters);
+
+        return volunteersPools;
+    }
+
+    public List<Volunteer> read(
+            InputStream inputStream,
+            VolunteerFilter... filters
+    ) throws IOException {
+
+        CustomList<Volunteer> volunteersCollection = new CustomList<>();
+
+        readAndAddToCollection(inputStream, volunteersCollection, filters);
+
+        return volunteersCollection;
+    }
+
+    private void readAndAddToCollection(
+            InputStream inputStream,
+            Incrementable<Volunteer> volunteersCollection,
+            VolunteerFilter... filters)
+            throws IOException {
 
         // Read CSV
         CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "ISO-8859-1"), ';');
         String[] header = reader.readNext();
 
         String [] nextLine;
-
-        Pools<Volunteer> volunteersPools = new Pools<>(maxPoolSize);
 
         // Read CSV and fetch Photos et Add to ZIP
         while ((nextLine = reader.readNext()) != null) {
@@ -40,20 +68,18 @@ public class VolunteersCsvFileReader {
             String email = nextLine[3];
             String team = nextLine[4];
 
-            Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team);
+            Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
             if (filters != null) {
                 for (VolunteerFilter filter : filters) {
                     if (filter.keep(volunteer)) {
-                        volunteersPools.add(volunteer);
+                        volunteersCollection.add(volunteer);
                         break;
                     }
                 }
             } else {
-                volunteersPools.add(volunteer);
+                volunteersCollection.add(volunteer);
             }
         }
-
-        return volunteersPools;
     }
 
     public List<String> readTeams(InputStream inputStream) throws IOException {
