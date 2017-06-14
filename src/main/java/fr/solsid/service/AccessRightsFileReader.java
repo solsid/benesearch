@@ -85,7 +85,12 @@ public class AccessRightsFileReader {
         return row.getCell(cellIndex).getStringCellValue();
     }
 
-    private int getNumericValueOf(Row row, int cellIndex) {
-        return (int) row.getCell(cellIndex).getNumericCellValue();
+    private Integer getNumericValueOf(Row row, int cellIndex) {
+        try {
+            return (int) row.getCell(cellIndex).getNumericCellValue();
+        } catch(IllegalStateException e) {
+            System.out.println("Couldn't get value from row: " + row.getRowNum() + " / cell: " + cellIndex);
+            return null;
+        }
     }
 }
