@@ -80,9 +80,7 @@ public class AccessRightsFileReader {
             assignments.add(new Assignment(team, true));
         } else {
             boolean isLeader = "chef".equalsIgnoreCase(leader) ? true : false;
-            if (isLeader) {
-                assignments.add(new Assignment(team, isLeader));
-            }
+            assignments.add(new Assignment(team, isLeader));
         }
         return assignments;
 
