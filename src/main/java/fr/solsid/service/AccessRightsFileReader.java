@@ -47,11 +47,14 @@ public class AccessRightsFileReader {
         while (iterator.hasNext()) {
 
             Row currentRow = iterator.next();
-
-            Assignment assignment = extractAssigment(currentRow);
-            Set<AccessRight> accessRights = extractAccessRights(currentRow);
-
-            result.put(assignment, accessRights);
+            try {
+                Assignment assignment = extractAssigment(currentRow);
+                Set<AccessRight> accessRights = extractAccessRights(currentRow);
+                result.put(assignment, accessRights);
+            } catch(Exception e) {
+                System.out.println("Problem extracting info from row: " + currentRow.getRowNum());
+                throw e;
+            }
         }
 
         return result;
