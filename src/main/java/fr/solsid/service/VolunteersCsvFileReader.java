@@ -54,7 +54,8 @@ public class VolunteersCsvFileReader {
             Incrementable<Volunteer> volunteersCollection,
             VolunteerFilter... filters)
             throws IOException {
-
+        System.out.println("Starting reading file...");
+        
         // Read CSV
         CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "ISO-8859-1"), ';');
         String[] header = reader.readNext();
@@ -68,6 +69,7 @@ public class VolunteersCsvFileReader {
             String firstname = nextLine[2];
             String email = nextLine[3];
             String team = nextLine[4];
+            System.out.println("Reading line... " + "ID = " + id);
 
             Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
             if (filters != null) {
