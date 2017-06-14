@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,9 +49,11 @@ public class AccessRightsFileReader {
 
             Row currentRow = iterator.next();
             try {
-                Assignment assignment = extractAssigment(currentRow);
+                List<Assignment> assignments = extractAssigments(currentRow);
                 Set<AccessRight> accessRights = extractAccessRights(currentRow);
-                result.put(assignment, accessRights);
+                for (Assignment assignment : assignments) {
+                    result.put(assignment, accessRights);
+                }
             } catch(Exception e) {
                 System.out.println("Problem extracting info from row: " + currentRow.getRowNum());
                 throw e;
@@ -60,11 +63,21 @@ public class AccessRightsFileReader {
         return result;
     }
 
-    private Assignment extractAssigment(Row row) {
+    private List<Assignment> extractAssigments(Row row) {
+        List<Assignment> assignments = new ArrayList<>();
         String team = getStringValueOf(row, 0);
         String leader = getStringValueOf(row, 1);
-        boolean isLeader = "chef".equalsIgnoreCase(leader) ? true : false;
-        return new Assignment(team, isLeader);
+
+        if (StringUtils.isEmpty(leader)) {
+            assignments.add(new Assignment(team, false));
+            assignments.add(new Assignment(team, true));
+        } else {
+            boolean isLeader = "chef".equalsIgnoreCase(leader) ? true : false;
+            if (isLeader) {
+                assignments.add(new Assignment(team, isLeader));
+            }
+        }
+        return assignments;
     }
 
     private Set<AccessRight> extractAccessRights(Row row) {
@@ -85,13 +98,18 @@ public class AccessRightsFileReader {
     }
 
     private String getStringValueOf(Row row, int cellIndex) {
-        return row.getCell(cellIndex).getStringCellValue();
+        try {
+            return row.getCell(cellIndex).getStringCellValue();
+        } catch(Exception e) {
+            System.out.println("Couldn't get value from row: " + row.getRowNum() + " / cell: " + cellIndex);
+            return "";
+        }
     }
 
     private int getNumericValueOf(Row row, int cellIndex) {
         try {
             return (int) row.getCell(cellIndex).getNumericCellValue();
-        } catch(IllegalStateException e) {
+        } catch(Exception e) {
             System.out.println("Couldn't get value from row: " + row.getRowNum() + " / cell: " + cellIndex);
             return 0;
         }
