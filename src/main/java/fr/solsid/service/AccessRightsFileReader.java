@@ -48,6 +48,11 @@ public class AccessRightsFileReader {
         while (iterator.hasNext()) {
 
             Row currentRow = iterator.next();
+
+            String team = getStringValueOf(currentRow, 0);
+            if (StringUtils.isEmpty(team)) {
+                break;
+            }
             try {
                 List<Assignment> assignments = extractAssigments(currentRow);
                 Set<AccessRight> accessRights = extractAccessRights(currentRow);
