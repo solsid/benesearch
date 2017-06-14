@@ -11,9 +11,9 @@ public class Volunteer implements Comparable<Volunteer>{
     private final String email;
     private final Assignment assignment;
 
-    public Volunteer(String id, String lastname, String firstName, String email, String team, boolean leader) {
+    public Volunteer(String id, String lastName, String firstName, String email, String team, boolean leader) {
         this.id = id;
-        this.lastName = id;
+        this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
         this.assignment = new Assignment(team, leader);
