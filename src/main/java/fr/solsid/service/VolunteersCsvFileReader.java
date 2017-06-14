@@ -55,7 +55,7 @@ public class VolunteersCsvFileReader {
             VolunteerFilter... filters)
             throws IOException {
         System.out.println("Starting reading file...");
-        
+
         // Read CSV
         CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "ISO-8859-1"), ';');
         String[] header = reader.readNext();
@@ -72,6 +72,9 @@ public class VolunteersCsvFileReader {
             System.out.println("Reading line... " + "ID = " + id);
 
             Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
+
+            System.out.println(filters.length);
+
             if (filters != null) {
                 for (VolunteerFilter filter : filters) {
                     if (filter.keep(volunteer)) {
