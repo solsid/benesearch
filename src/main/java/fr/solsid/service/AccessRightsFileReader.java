@@ -68,7 +68,7 @@ public class AccessRightsFileReader {
         Set<AccessRight> accessRights = new HashSet<>();
 
         for (int i=2 ; i <= 7 ; i++) {
-            Integer accessRight = getNumericValueOf(row, i);
+            int accessRight = getNumericValueOf(row, i);
             if (hasRight(accessRight)) {
                 accessRights.add(columnToAccessRight.get(i));
             }
@@ -77,7 +77,7 @@ public class AccessRightsFileReader {
         return accessRights;
     }
 
-    private boolean hasRight(Integer value) {
+    private boolean hasRight(int value) {
         return 1 == value;
     }
 
@@ -85,12 +85,12 @@ public class AccessRightsFileReader {
         return row.getCell(cellIndex).getStringCellValue();
     }
 
-    private Integer getNumericValueOf(Row row, int cellIndex) {
+    private int getNumericValueOf(Row row, int cellIndex) {
         try {
             return (int) row.getCell(cellIndex).getNumericCellValue();
         } catch(IllegalStateException e) {
             System.out.println("Couldn't get value from row: " + row.getRowNum() + " / cell: " + cellIndex);
-            return null;
+            return 0;
         }
     }
 }
