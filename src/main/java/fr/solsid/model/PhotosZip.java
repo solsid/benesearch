@@ -67,7 +67,7 @@ public class PhotosZip {
         bos.write(("Id;Nom;Prénom;Email;Equipe\r\n").getBytes());
 
         for (Volunteer volunteer : volunteers) {
-            bos.write((volunteer.id() + ";" + volunteer.lastName() + ";" + volunteer.firstName() + ";" + volunteer.email() + ";" + volunteer.team() + "\r\n").getBytes());
+            bos.write((volunteer.getId() + ";" + volunteer.getLastName() + ";" + volunteer.getFirstName() + ";" + volunteer.getEmail() + ";" + volunteer.getTeam() + "\r\n").getBytes());
         }
 
         return bos.toByteArray();

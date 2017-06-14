@@ -75,7 +75,7 @@ public class BadgeController {
     private List<VolunteerWithAccessRights> associateAccessRightsToVolunteers(List<Volunteer> volunteers, Map<Assignment, Set<AccessRight>> assignmentAccessRights) {
         List<VolunteerWithAccessRights> result = new ArrayList<>();
         for (Volunteer volunteer : volunteers) {
-            Set<AccessRight> accessRights = assignmentAccessRights.get(volunteer.assignment());
+            Set<AccessRight> accessRights = assignmentAccessRights.get(volunteer.getAssignment());
             result.add(new VolunteerWithAccessRights(volunteer, accessRights));
         }
         return result;

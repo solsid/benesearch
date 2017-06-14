@@ -17,11 +17,11 @@ public class AssignmentAccessRights {
         this.accessRights = new HashSet<>(accessRights);
     }
 
-    public Assignment assignment() {
+    public Assignment getAssignment() {
         return assignment;
     }
 
-    public Set<AccessRight> accessRightsSet() {
+    public Set<AccessRight> getAccessRights() {
         return new HashSet<>(this.accessRights);
     }
 

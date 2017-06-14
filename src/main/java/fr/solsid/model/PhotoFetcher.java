@@ -39,7 +39,7 @@ public class PhotoFetcher {
             public void run() {
 
                 for (Volunteer volunteerToFetch : volunteersToFetch) {
-                    String volunteerId = volunteerToFetch.id();
+                    String volunteerId = volunteerToFetch.getId();
 
                     try {
                         byte[] photoBytes = fetchPhoto(volunteerId);
@@ -67,7 +67,7 @@ public class PhotoFetcher {
             public void run() {
 
                 for (Volunteer volunteerToFetch : volunteersToFetch) {
-                    String volunteerId = volunteerToFetch.id();
+                    String volunteerId = volunteerToFetch.getId();
 
                     try {
                         pingPhoto(volunteerId);

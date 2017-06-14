@@ -14,15 +14,15 @@ public class Assignment {
     }
 
     public Assignment(Assignment assignment) {
-        this.team = assignment.team();
-        this.leader = assignment.leader();
+        this.team = assignment.getTeam();
+        this.leader = assignment.isLeader();
     }
 
-    public String team() {
+    public String getTeam() {
         return this.team;
     }
 
-    public boolean leader() {
+    public boolean isLeader() {
         return this.leader;
     }
 

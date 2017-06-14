@@ -20,7 +20,7 @@ public enum AccessRight {
     static {
         letterToAccessRight = new HashMap<>();
         for (AccessRight accessRight : AccessRight.values()) {
-            letterToAccessRight.put(accessRight.letter(), accessRight);
+            letterToAccessRight.put(accessRight.getLetter(), accessRight);
         }
     }
 
@@ -30,7 +30,7 @@ public enum AccessRight {
         this.letter = letter;
     }
 
-    public String letter() {
+    public String getLetter() {
         return this.letter;
     }
 

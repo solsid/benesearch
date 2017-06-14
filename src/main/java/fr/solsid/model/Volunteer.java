@@ -6,46 +6,47 @@ package fr.solsid.model;
 public class Volunteer implements Comparable<Volunteer>{
 
     private final String id;
-    private final String lastname;
-    private final String firstname;
+    private final String lastName;
+    private final String firstName;
     private final String email;
     private final Assignment assignment;
 
     public Volunteer(String id, String lastname, String firstName, String email, String team, boolean leader) {
         this.id = id;
-        this.lastname = id;
-        this.firstname = firstName;
+        this.lastName = id;
+        this.firstName = firstName;
         this.email = email;
         this.assignment = new Assignment(team, leader);
     }
 
-    public String id() {
+    public String getId() {
         return id;
     }
 
-    public String lastName() {
-        return lastname;
+    public String getLastName() {
+        return lastName;
     }
 
-    public String firstName() {
-        return firstname;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String email() {
+    public String getEmail() {
         return email;
     }
 
-    public String team() {
-        return assignment.team();
+    public Assignment getAssignment() {
+        return assignment;
     }
 
-    public boolean leader() {
-        return assignment.leader();
+    public String getTeam() {
+        return assignment.getTeam();
     }
 
-    public Assignment assignment() {
-        return new Assignment(this.assignment);
+    public boolean isLeader() {
+        return assignment.isLeader();
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -55,8 +56,8 @@ public class Volunteer implements Comparable<Volunteer>{
         Volunteer volunteer = (Volunteer) o;
 
         if (id != null ? !id.equals(volunteer.id) : volunteer.id != null) return false;
-        if (lastname != null ? !lastname.equals(volunteer.lastname) : volunteer.lastname != null) return false;
-        if (firstname != null ? !firstname.equals(volunteer.firstname) : volunteer.firstname != null) return false;
+        if (lastName != null ? !lastName.equals(volunteer.lastName) : volunteer.lastName != null) return false;
+        if (firstName != null ? !firstName.equals(volunteer.firstName) : volunteer.firstName != null) return false;
         if (email != null ? !email.equals(volunteer.email) : volunteer.email != null) return false;
         return !(assignment != null ? !assignment.equals(volunteer.assignment) : volunteer.assignment != null);
 
@@ -65,8 +66,8 @@ public class Volunteer implements Comparable<Volunteer>{
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (lastname != null ? lastname.hashCode() : 0);
-        result = 31 * result + (firstname != null ? firstname.hashCode() : 0);
+        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
+        result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (assignment != null ? assignment.hashCode() : 0);
         return result;
@@ -75,9 +76,9 @@ public class Volunteer implements Comparable<Volunteer>{
     @Override
     public int compareTo(Volunteer volunteer) {
         if (volunteer != null) {
-            if (volunteer.lastName() != null) {
-                if (this.lastname != null) {
-                    this.lastname.compareTo(volunteer.lastname);
+            if (volunteer.getLastName() != null) {
+                if (this.lastName != null) {
+                    this.lastName.compareTo(volunteer.lastName);
                 } else {
                     return -1;
                 }

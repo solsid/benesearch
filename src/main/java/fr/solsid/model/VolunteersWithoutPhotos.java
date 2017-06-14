@@ -11,11 +11,11 @@ public class VolunteersWithoutPhotos {
 
     public void add(Volunteer volunteer) {
         Set<Volunteer> volunteersInTeam;
-        if (volunteersSetByTeam.containsKey(volunteer.team())) {
-            volunteersInTeam = volunteersSetByTeam.get(volunteer.team());
+        if (volunteersSetByTeam.containsKey(volunteer.getTeam())) {
+            volunteersInTeam = volunteersSetByTeam.get(volunteer.getTeam());
         } else {
             volunteersInTeam = new HashSet<>();
-            volunteersSetByTeam.put(volunteer.team(), volunteersInTeam);
+            volunteersSetByTeam.put(volunteer.getTeam(), volunteersInTeam);
         }
         volunteersInTeam.add(volunteer);
     }
