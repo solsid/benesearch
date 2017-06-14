@@ -74,11 +74,13 @@ public class VolunteersCsvFileReader {
                 for (VolunteerFilter filter : filters) {
                     if (filter.keep(volunteer)) {
                         volunteersCollection.add(volunteer);
+                        System.out.println("Adding volunteer " + id);
                         break;
                     }
                 }
             } else {
                 volunteersCollection.add(volunteer);
+                System.out.println("Adding volunteer " + id);
             }
         }
     }
