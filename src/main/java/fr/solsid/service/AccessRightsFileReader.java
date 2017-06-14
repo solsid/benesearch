@@ -68,7 +68,7 @@ public class AccessRightsFileReader {
         Set<AccessRight> accessRights = new HashSet<>();
 
         for (int i=2 ; i <= 7 ; i++) {
-            String accessRight = getStringValueOf(row, i);
+            int accessRight = getNumericValueOf(row, i);
             if (hasRight(accessRight)) {
                 accessRights.add(columnToAccessRight.get(i));
             }
@@ -77,11 +77,15 @@ public class AccessRightsFileReader {
         return accessRights;
     }
 
-    private boolean hasRight(String value) {
-        return "1".equals(value);
+    private boolean hasRight(int value) {
+        return 1 == value;
     }
 
     private String getStringValueOf(Row row, int cellIndex) {
         return row.getCell(cellIndex).getStringCellValue();
+    }
+
+    private int getNumericValueOf(Row row, int cellIndex) {
+        return (int) row.getCell(cellIndex).getNumericCellValue();
     }
 }
