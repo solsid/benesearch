@@ -14,4 +14,12 @@ public class VolunteerWithAccessRights {
         this.volunteer = volunteer;
         this.accessRights = accessRights;
     }
+
+    public Volunteer getVolunteer() {
+        return volunteer;
+    }
+
+    public Set<AccessRight> getAccessRights() {
+        return accessRights;
+    }
 }
