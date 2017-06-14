@@ -15,6 +15,6 @@ public class VolunteerTeamFilter implements VolunteerFilter {
 
     @Override
     public boolean keep(Volunteer volunteer) {
-        return volunteer != null && this.team.equals(volunteer.getTeam());
+        return volunteer != null && this.team.equals(volunteer.getAssignment().getTeam());
     }
 }

@@ -39,15 +39,6 @@ public class Volunteer implements Comparable<Volunteer>{
         return assignment;
     }
 
-    public String getTeam() {
-        return assignment.getTeam();
-    }
-
-    public boolean isLeader() {
-        return assignment.isLeader();
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
