@@ -1,6 +1,11 @@
 package fr.solsid.model;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by Arnaud on 07/06/2017.
@@ -25,5 +30,58 @@ public class PhotoFetcher {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.headForHeaders(url);
         System.out.println("Pinged photo: " + volunteerIdString + ".");
+    }
+
+    public void fetchPhotosInThread(Iterable<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
+
+        Runnable worker = new Runnable() {
+            @Override
+            public void run() {
+
+                for (Volunteer volunteerToFetch : volunteersToFetch) {
+                    String volunteerId = volunteerToFetch.id();
+
+                    try {
+                        byte[] photoBytes = fetchPhoto(volunteerId);
+                        photosZip.addPhoto(volunteerId, photoBytes);
+
+                    } catch (final HttpClientErrorException e) {
+                        System.out.println("No photo found for: " + volunteerId);
+                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                            photosZip.addVolunteerWithoutPhoto(volunteerToFetch);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        };
+        executor.execute(worker);
+    }
+
+    public void pingPhotosInThread(Iterable<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
+
+        Runnable worker = new Runnable() {
+            @Override
+            public void run() {
+
+                for (Volunteer volunteerToFetch : volunteersToFetch) {
+                    String volunteerId = volunteerToFetch.id();
+
+                    try {
+                        pingPhoto(volunteerId);
+
+                    } catch (final HttpClientErrorException e) {
+                        System.out.println("No photo found for: " + volunteerId);
+                        if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                            photosZip.addVolunteerWithoutPhoto(volunteerToFetch);
+                        }
+                    }
+                }
+
+            }
+        };
+        executor.execute(worker);
     }
 }

@@ -1,6 +1,10 @@
-package fr.solsid.model;
+package fr.solsid.service;
 
 import com.opencsv.CSVReader;
+import fr.solsid.model.Pools;
+import fr.solsid.model.Volunteer;
+import fr.solsid.model.VolunteerFilter;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +14,7 @@ import java.util.*;
 /**
  * Created by Arnaud on 07/06/2017.
  */
+@Service
 public class VolunteersCsvFileReader {
 
     public Pools<Volunteer> read(InputStream inputStream, int maxPoolSize) throws IOException {

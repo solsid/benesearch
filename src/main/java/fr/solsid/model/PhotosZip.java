@@ -44,6 +44,10 @@ public class PhotosZip {
         return bos.toByteArray();
     }
 
+    public synchronized Map<String, List<Volunteer>> getVolunteersWithoutPhotoByTeam() {
+        return volunteersWithoutPhotos.getVolunteersByTeam();
+    }
+
     private void addVolunteersWithoutPhotosToZip() throws IOException {
         final Map<String, List<Volunteer>> volunteersByTeam = volunteersWithoutPhotos.getVolunteersByTeam();
 
