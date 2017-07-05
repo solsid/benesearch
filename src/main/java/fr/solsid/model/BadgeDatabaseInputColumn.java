@@ -35,7 +35,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return "OUI"; //TODO:
+            return "OUI";
         }
     },
     PHOTO_FILENAME {
@@ -200,7 +200,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.PROD) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.PROD) ? "OUI" : "NON") : "";
         }
     },
     CLUB_VIP {
@@ -211,7 +211,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.CLUB_VIP) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.CLUB_VIP) ? "OUI" : "NON") : "";
         }
     },
     MEDIA_PRESSE {
@@ -222,7 +222,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.MEDIA_PRESSE) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.MEDIA_PRESSE) ? "OUI" : "NON") : "";
         }
     },
     LOGES_ARTISTES {
@@ -233,7 +233,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.LOGES_ARTISTES) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.LOGES_ARTISTES) ? "OUI" : "NON") : "";
         }
     },
     SCENES {
@@ -244,7 +244,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.SCENES) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.SCENES) ? "OUI" : "NON") : "";
         }
     },
     DEVANT_DE_SCENE {
@@ -255,7 +255,7 @@ public enum BadgeDatabaseInputColumn {
 
         @Override
         public String getValue(VolunteerWithAccessRights volunteer) {
-            return volunteer.getAccessRights().contains(AccessRight.DEVANT_SCENE) ? "OUI" : "NON";
+            return volunteer.getAccessRights() != null ? (volunteer.getAccessRights().contains(AccessRight.DEVANT_SCENE) ? "OUI" : "NON") : "";
         }
     },
     PARK_BOULOGNE {
