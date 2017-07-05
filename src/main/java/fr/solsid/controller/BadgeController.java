@@ -78,15 +78,21 @@ public class BadgeController {
     @CrossOrigin(origins = "*")
     @RequestMapping(value="/getVolunteersWithAccessRights", method= RequestMethod.POST)
     public ResponseEntity<List<VolunteerWithAccessRights>> getVolunteersWithAssignment(
-            @RequestParam("volunteersFile") MultipartFile volunteersFile,
-            @RequestParam("accessRightsMatrixFile") MultipartFile accessRightsMatrixFile
+            @RequestParam("volunteers") MultipartFile volunteersFile,
+            @RequestParam("teamLeadersAccessRights") MultipartFile teamLeadersAccessRightsFile,
+            @RequestParam("nonTeamLeadersAccessRights") MultipartFile nonTeamLeadersAccessRightsFile
             ) throws Exception {
 
-        if (!volunteersFile.isEmpty() && !accessRightsMatrixFile.isEmpty()) {
+        if (!volunteersFile.isEmpty() && (!teamLeadersAccessRightsFile.isEmpty() && !nonTeamLeadersAccessRightsFile.isEmpty())) {
 
             List<Volunteer> volunteers = readVolunteersFile(volunteersFile.getInputStream());
-            Map<Assignment, Set<AccessRight>> assigmentAccessRights = readAccessRightsFile(accessRightsMatrixFile.getInputStream());
-
+            Map<Assignment, Set<AccessRight>> assigmentAccessRights = new HashMap<>();
+            if (!teamLeadersAccessRightsFile.isEmpty()) {
+                assigmentAccessRights.putAll(readAccessRightsFile(teamLeadersAccessRightsFile.getInputStream()));
+            }
+            if (!nonTeamLeadersAccessRightsFile.isEmpty()) {
+                assigmentAccessRights.putAll(readAccessRightsFile(nonTeamLeadersAccessRightsFile.getInputStream()));
+            }
             List<VolunteerWithAccessRights> result = associateAccessRightsToVolunteers(volunteers, assigmentAccessRights);
 
             System.out.println("Returning " + result.size() + " volunteers with access rights.");
