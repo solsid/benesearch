@@ -79,13 +79,16 @@ public class BadgeController {
     @RequestMapping(value="/getVolunteersWithAccessRights", method= RequestMethod.POST)
     public ResponseEntity<List<VolunteerWithAccessRights>> getVolunteersWithAssignment(
             @RequestParam("volunteers") MultipartFile volunteersFile,
+            @RequestParam("teamLeaders") MultipartFile teamLeadersFile,
             @RequestParam("teamLeadersAccessRights") MultipartFile teamLeadersAccessRightsFile,
             @RequestParam("nonTeamLeadersAccessRights") MultipartFile nonTeamLeadersAccessRightsFile
             ) throws Exception {
 
-        if (!volunteersFile.isEmpty() && (!teamLeadersAccessRightsFile.isEmpty() && !nonTeamLeadersAccessRightsFile.isEmpty())) {
+        if (!volunteersFile.isEmpty() && (!teamLeadersAccessRightsFile.isEmpty() || !nonTeamLeadersAccessRightsFile.isEmpty())) {
 
             List<Volunteer> volunteers = readVolunteersFile(volunteersFile.getInputStream());
+            volunteers = enrichVolunteersWithLeaderInfo(volunteers, readTeamLeadersFile(teamLeadersFile.getInputStream()));
+
             Map<Assignment, Set<AccessRight>> assigmentAccessRights = new HashMap<>();
             if (!teamLeadersAccessRightsFile.isEmpty()) {
                 assigmentAccessRights.putAll(readAccessRightsFile(teamLeadersAccessRightsFile.getInputStream()));
@@ -111,13 +114,16 @@ public class BadgeController {
     @RequestMapping(value="/badgeDatabase/inputFile/generate", method= RequestMethod.POST)
     public ResponseEntity<Resource> generateBadgeDatabaseInputFile(
             @RequestParam("volunteers") MultipartFile volunteersFile,
+            @RequestParam("teamLeaders") MultipartFile teamLeadersFile,
             @RequestParam("teamLeadersAccessRights") MultipartFile teamLeadersAccessRightsFile,
             @RequestParam("nonTeamLeadersAccessRights") MultipartFile nonTeamLeadersAccessRightsFile
     ) throws Exception {
 
-        if (!volunteersFile.isEmpty() && (!teamLeadersAccessRightsFile.isEmpty() && !nonTeamLeadersAccessRightsFile.isEmpty())) {
+        if (!volunteersFile.isEmpty() && (!teamLeadersAccessRightsFile.isEmpty() || !nonTeamLeadersAccessRightsFile.isEmpty())) {
 
             List<Volunteer> volunteers = readVolunteersFile(volunteersFile.getInputStream());
+            volunteers = enrichVolunteersWithLeaderInfo(volunteers, readTeamLeadersFile(teamLeadersFile.getInputStream()));
+
             Map<Assignment, Set<AccessRight>> assigmentAccessRights = new HashMap<>();
             if (!teamLeadersAccessRightsFile.isEmpty()) {
                 assigmentAccessRights.putAll(readAccessRightsFile(teamLeadersAccessRightsFile.getInputStream()));
@@ -147,7 +153,33 @@ public class BadgeController {
     }
 
     private List<Volunteer> readVolunteersFile(InputStream fileInputStream) throws IOException {
-        return volunteersCsvFileReader.read(fileInputStream);
+        return volunteersCsvFileReader.read(fileInputStream, false);
+    }
+
+    private Set<String> readTeamLeadersFile(InputStream fileInputStream) throws IOException {
+        List<Volunteer> teamLeaders = volunteersCsvFileReader.read(fileInputStream, true);
+
+        Set<String> teamLeadersIds = new HashSet<>();
+        for (Volunteer teamLeader : teamLeaders) {
+            teamLeadersIds.add(teamLeader.getId());
+        }
+        return teamLeadersIds;
+    }
+
+    private List<Volunteer> enrichVolunteersWithLeaderInfo(List<Volunteer> volunteers, Set<String> teamLeaderIds) {
+        List<Volunteer> enrichedVolunteers = new ArrayList<>();
+        for (Volunteer volunteer : volunteers) {
+            Volunteer enrichedVolunteer = new Volunteer(
+                    volunteer.getId(),
+                    volunteer.getLastName(),
+                    volunteer.getFirstName(),
+                    volunteer.getEmail(),
+                    volunteer.getAssignment().getTeam(),
+                    teamLeaderIds.contains(volunteer.getId()));
+
+            enrichedVolunteers.add(enrichedVolunteer);
+        }
+        return enrichedVolunteers;
     }
 
     private Map<Assignment, Set<AccessRight>> readAccessRightsFile(InputStream fileInputStream) throws IOException, InvalidFormatException {

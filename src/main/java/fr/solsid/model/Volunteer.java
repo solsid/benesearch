@@ -19,6 +19,10 @@ public class Volunteer implements Comparable<Volunteer>{
         this.assignment = new Assignment(team, leader);
     }
 
+    public Volunteer(Volunteer volunteer) {
+        this(volunteer.getId(), volunteer.getLastName(), volunteer.getFirstName(), volunteer.getEmail(), volunteer.getAssignment().getTeam(), volunteer.assignment.isLeader());
+    }
+
     public String getId() {
         return id;
     }

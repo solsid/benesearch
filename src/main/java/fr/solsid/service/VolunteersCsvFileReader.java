@@ -17,33 +17,27 @@ public class VolunteersCsvFileReader {
 
     public Pools<Volunteer> read(
             InputStream inputStream,
-            int maxPoolSize
-    ) throws IOException {
-
-        return read(inputStream, maxPoolSize, null);
-    }
-
-    public Pools<Volunteer> read(
-            InputStream inputStream,
             int maxPoolSize,
+            Boolean teamLeaders,
             VolunteerFilter... filters
     ) throws IOException {
 
         Pools<Volunteer> volunteersPools = new Pools<>(maxPoolSize);
 
-        readAndAddToCollection(inputStream, volunteersPools, filters);
+        readAndAddToCollection(inputStream, volunteersPools, teamLeaders, filters);
 
         return volunteersPools;
     }
 
     public List<Volunteer> read(
             InputStream inputStream,
+            Boolean teamLeaders,
             VolunteerFilter... filters
     ) throws IOException {
 
         CustomList<Volunteer> volunteersCollection = new CustomList<>();
 
-        readAndAddToCollection(inputStream, volunteersCollection, filters);
+        readAndAddToCollection(inputStream, volunteersCollection, teamLeaders, filters);
 
         System.out.println("Found " + volunteersCollection.size() + " volunteers");
         return volunteersCollection;
@@ -52,6 +46,7 @@ public class VolunteersCsvFileReader {
     private void readAndAddToCollection(
             InputStream inputStream,
             Incrementable<Volunteer> volunteersCollection,
+            Boolean teamLeaders,
             VolunteerFilter... filters)
             throws IOException {
 
@@ -69,7 +64,7 @@ public class VolunteersCsvFileReader {
             String email = nextLine[3];
             String team = nextLine[4];
 
-            Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, false);
+            Volunteer volunteer = new Volunteer(id, lastname, firstname, email, team, teamLeaders);
 
             if (filters != null && filters.length > 0) {
                 for (VolunteerFilter filter : filters) {

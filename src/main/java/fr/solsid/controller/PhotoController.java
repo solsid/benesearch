@@ -136,7 +136,7 @@ public class PhotoController {
                 // Open thread executor
                 ExecutorService executor = Executors.newFixedThreadPool(5);
 
-                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 100);
+                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 100, null);
 
                 PhotosZip photosZip = new PhotosZip();
 
@@ -242,7 +242,7 @@ public class PhotoController {
                 // Open thread executor
                 ExecutorService executor = Executors.newFixedThreadPool(10);
 
-                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 20, new VolunteerTeamFilter(teamToExport));
+                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 20, null, new VolunteerTeamFilter(teamToExport));
 
                 PhotosZip photosZip = new PhotosZip();
 
@@ -288,7 +288,7 @@ public class PhotoController {
                 // Open thread executor
                 ExecutorService executor = Executors.newFixedThreadPool(5);
 
-                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 20, new VolunteerTeamFilter(teamToExport));
+                Pools<Volunteer> volunteersPools = volunteersCsvFileReader.read(file.getInputStream(), 20, null, new VolunteerTeamFilter(teamToExport));
 
                 PhotosZip photosZip = new PhotosZip();
 
