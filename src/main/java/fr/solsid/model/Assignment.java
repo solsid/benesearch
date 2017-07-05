@@ -34,13 +34,13 @@ public class Assignment {
         Assignment that = (Assignment) o;
 
         if (leader != that.leader) return false;
-        return !(team != null ? !team.equals(that.team) : that.team != null);
+        return !(team != null ? !team.equalsIgnoreCase(that.team) : that.team != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = team != null ? team.hashCode() : 0;
+        int result = team != null ? team.toUpperCase().hashCode() : 0;
         result = 31 * result + (leader ? 1 : 0);
         return result;
     }
