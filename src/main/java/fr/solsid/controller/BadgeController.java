@@ -179,21 +179,24 @@ public class BadgeController {
 
         // Set Header
         Row row = sheet.createRow(rowNum++);
+        int colNum = 0;
         for (BadgeDatabaseInputColumn column : badgeDatabaseInputColumns) {
-            int colNum = 0;
-
             Cell cell = row.createCell(colNum++);
             cell.setCellValue(column.getKey());
         }
 
         // Set values
         for (VolunteerWithAccessRights volunteer : volunteers) {
-            row = sheet.createRow(rowNum++);
-            int colNum = 0;
+            if (volunteer.getAccessRights() != null) {
+                row = sheet.createRow(rowNum++);
+                colNum = 0;
 
-            for (BadgeDatabaseInputColumn column : badgeDatabaseInputColumns) {
-                Cell cell = row.createCell(colNum++);
-                cell.setCellValue(column.getValue(volunteer));
+                for (BadgeDatabaseInputColumn column : badgeDatabaseInputColumns) {
+                    Cell cell = row.createCell(colNum++);
+                    cell.setCellValue(column.getValue(volunteer));
+                }
+            } else {
+                volunteersWithoutAccessRights.add(volunteer);
             }
         }
 
@@ -228,7 +231,7 @@ public class BadgeController {
         }
         byte[] excelBytes = excelBos.toByteArray();
 
-        ZipEntry excelZipEntry = new ZipEntry("badge_database_input.xslx");
+        ZipEntry excelZipEntry = new ZipEntry("badge_database_input.xlsx");
         zipOut.putNextEntry(excelZipEntry);
         zipOut.write(excelBytes, 0, excelBytes.length);
 
