@@ -2,10 +2,11 @@ package fr.solsid.service;
 
 import fr.solsid.model.AccessRight;
 import fr.solsid.model.Assignment;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -32,11 +33,11 @@ public class AccessRightsFileReader {
 
     public Map<Assignment, Set<AccessRight>> read(
             InputStream inputStream)
-            throws IOException {
+            throws IOException, InvalidFormatException {
 
         Map<Assignment, Set<AccessRight>> result = new HashMap<>();
 
-        Workbook workbook = new HSSFWorkbook(inputStream);
+        Workbook workbook = WorkbookFactory.create(inputStream);
         Sheet datatypeSheet = workbook.getSheetAt(0);
         Iterator<Row> iterator = datatypeSheet.iterator();
 
@@ -90,13 +91,22 @@ public class AccessRightsFileReader {
         Set<AccessRight> accessRights = new HashSet<>();
 
         for (int i=2 ; i <= 7 ; i++) {
-            int accessRight = getNumericValueOf(row, i);
-            if (hasRight(accessRight)) {
+            String accessRightStr = getStringValueOf(row, i);
+            if (!StringUtils.isEmpty(accessRightStr) && hasRight(accessRightStr)) {
                 accessRights.add(columnToAccessRight.get(i));
+            } else {
+                int accessRightInt = getNumericValueOf(row, i);
+                if (hasRight(accessRightInt)) {
+                    accessRights.add(columnToAccessRight.get(i));
+                }
             }
         }
 
         return accessRights;
+    }
+
+    private boolean hasRight(String value) {
+        return "OUI".equalsIgnoreCase(value);
     }
 
     private boolean hasRight(int value) {
