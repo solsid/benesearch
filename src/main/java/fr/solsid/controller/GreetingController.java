@@ -4,10 +4,12 @@ import fr.solsid.entity.Benevole;
 import fr.solsid.model.Greeting;
 import fr.solsid.repository.BenevoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,5 +50,50 @@ public class GreetingController {
         );
         System.out.println(benevoles);
         return benevoles.get(0);
+    }
+
+    @RequestMapping(value="/greeting/authent", method= RequestMethod.POST)
+    public ResponseEntity<String> authent(
+            @RequestParam(value="login") String login,
+            @RequestParam(value="mot_de_passe") String motDePasse) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
+        map.add("login", login);
+        map.add("mot_de_passe", motDePasse);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "http://www.benebox.org/offres/gestion/login/controle_login.php",
+                request ,
+                String.class );
+
+        return response;
+    }
+
+    @RequestMapping(value="/greeting/testAvecAuthent", method= RequestMethod.GET)
+    public ResponseEntity<String> testAvecAuthent(@RequestHeader(value="Cookie") String cookie) {
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Cookie", cookie);
+
+        HttpEntity entity = new HttpEntity(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "http://www.benebox.org/594_p_38242/ma-boite-a-outils.html",
+                HttpMethod.GET, entity, String.class);
+
+        String body = response.getBody();
+        if (body.contains("Merci de bien vouloir vous identifier")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("KO");
+        } else {
+            return ResponseEntity.ok().body("OK");
+        }
     }
 }
