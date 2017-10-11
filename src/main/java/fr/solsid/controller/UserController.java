@@ -1,5 +1,6 @@
 package fr.solsid.controller;
 
+import fr.solsid.exception.AuthenticationException;
 import fr.solsid.model.User;
 import fr.solsid.service.UserService;
 import io.jsonwebtoken.Jwts;
@@ -40,21 +41,15 @@ public class UserController {
         String email = login.getEmail();
         String password = login.getPassword();
 
-        User user = userService.findByEmail(email);
+        try {
+            String sessionId = userService.authenticate(login);
 
-        if (user == null) {
-            throw new ServletException("User email not found.");
+            jwtToken = Jwts.builder().setSubject(email).claim("session_id", sessionId).claim("roles", "user").setIssuedAt(new Date())
+                    .signWith(SignatureAlgorithm.HS256, "secretkey").compact();
+
+            return jwtToken;
+        } catch (AuthenticationException e) {
+            throw new ServletException("Authentication failed", e);
         }
-
-        String pwd = user.getPassword();
-
-        if (!password.equals(pwd)) {
-            throw new ServletException("Invalid login. Please check your name and password.");
-        }
-
-        jwtToken = Jwts.builder().setSubject(email).claim("roles", "user").setIssuedAt(new Date())
-                .signWith(SignatureAlgorithm.HS256, "secretkey").compact();
-
-        return jwtToken;
     }
 }

@@ -1,10 +1,22 @@
 package fr.solsid.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import fr.solsid.exception.AuthenticationException;
+import fr.solsid.model.BeneboxLoginResponse;
 import fr.solsid.model.User;
 import fr.solsid.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,5 +61,40 @@ public class UserService {
         return null;
         //TODO:
 //        return userRepository.findByEmail(email);
+    }
+
+    public String authenticate(User user) throws AuthenticationException {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<String, String>();
+        map.add("login", user.getEmail());
+        map.add("mot_de_passe", user.getPassword());
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "http://www.benebox.org/offres/gestion/login/controle_login.php",
+                request,
+                String.class);
+        if (response.getStatusCode().value() == 200) {
+            String xmlBodyString = response.getBody();
+
+            ObjectMapper xmlMapper = new XmlMapper();
+            try {
+                BeneboxLoginResponse xmlBody = xmlMapper.readValue(xmlBodyString, BeneboxLoginResponse.class);
+                if ("OK".equalsIgnoreCase(xmlBody.getResult().getValue())) {
+                    return response.getHeaders().get(HttpHeaders.SET_COOKIE).get(0);
+                } else {
+                    throw new AuthenticationException("L'utilisateur n'a pas pu être authentifié.");
+                }
+            } catch (IOException e) {
+                throw new AuthenticationException("L'utilisateur n'a pas pu être authentifié.", e);
+            }
+        } else {
+            throw new AuthenticationException("L'utilisateur n'a pas pu être authentifié.");
+        }
     }
 }
