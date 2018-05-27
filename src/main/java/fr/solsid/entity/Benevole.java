@@ -1,15 +1,12 @@
 package fr.solsid.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
 /**
  * Created by Arnaud on 29/08/2017.
  */
-@Entity
+//@Entity
 public class Benevole {
 
-    @Id
+//    @Id
     private Long id;
     private String prenom;
     private String nom;

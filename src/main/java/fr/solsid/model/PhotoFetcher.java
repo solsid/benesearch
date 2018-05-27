@@ -12,8 +12,8 @@ import java.util.concurrent.ExecutorService;
  */
 public class PhotoFetcher {
 
-    // URL exemple: "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
-    private static final String PHOTOS_TEMPLATE_URL = "http://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
+    // URL exemple: "https://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
+    private static final String PHOTOS_TEMPLATE_URL = "https://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
 
     public synchronized byte[] fetchPhoto(String volunteerIdString) {
         String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);

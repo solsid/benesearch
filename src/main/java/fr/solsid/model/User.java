@@ -1,28 +1,22 @@
 package fr.solsid.model;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.util.Date;
 
 /**
  * Created by Arnaud on 06/09/2017.
  */
-@Entity
+//@Entity
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userId;
     private String firstName;
     private String lastName;
     private String email;
     private String password;
 
-    @CreationTimestamp
+//    @CreationTimestamp
     private Date created;
 
     public Long getUserId() {

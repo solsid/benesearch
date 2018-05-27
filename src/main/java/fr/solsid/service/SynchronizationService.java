@@ -16,9 +16,9 @@ public class SynchronizationService {
     public void start() {
 
         //TODO:
-//        curl "http://www.benebox.org/offres/gestion/annuaire/module_export.php"
+//        curl "https://www.benebox.org/offres/gestion/annuaire/module_export.php"
 //                -H "Cookie: PHPSESSID=361c31f20fe10e3c4ffd8b9ffc20fa28"
-//                -H "Origin: http://www.benebox.org"
+//                -H "Origin: https://www.benebox.org"
 //                -H "Accept-Encoding: gzip, deflate"
 //                -H "Upgrade-Insecure-Requests: 1"
 //                -H "Content-Type: application/x-www-form-urlencoded"
