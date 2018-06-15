@@ -13,23 +13,48 @@ import java.util.concurrent.ExecutorService;
 public class PhotoFetcher {
 
     // URL exemple: "https://www.benebox.org/offres/image_inline_src/594/594_annuaire_2092676_L.jpg"
-    private static final String PHOTOS_TEMPLATE_URL = "https://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.jpg";
+    private static final String PHOTOS_TEMPLATE_URL = "https://www.benebox.org/offres/image_inline_src/594/594_annuaire_%s_L.%s";
+
+    private static final String JPG = "jpg";
+    private static final String PNG = "png";
 
     public synchronized byte[] fetchPhoto(String volunteerIdString) {
-        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
-        System.out.println("Fetching photo: " + volunteerIdString + " to URL: " + url + "...");
-        RestTemplate restTemplate = new RestTemplate();
-        byte[] photoBytes = restTemplate.getForObject(url, byte[].class);
+        byte[] photoBytes = new byte[0];
+        try {
+            photoBytes = fetchPhoto(volunteerIdString, JPG);
+        } catch (final HttpClientErrorException e) {
+            if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                photoBytes = fetchPhoto(volunteerIdString, PNG);
+            }
+        }
         System.out.println("Fetched photo: " + volunteerIdString + ".");
+
         return photoBytes;
     }
 
+    private synchronized byte[] fetchPhoto(final String volunteerIdString, final String photoFormat) {
+        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString, photoFormat);
+        System.out.println("Fetching photo: " + volunteerIdString + " to URL: " + url + "...");
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(url, byte[].class);
+    }
+
     public synchronized void pingPhoto(String volunteerIdString) {
-        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString);
+        try {
+            pingPhoto(volunteerIdString, JPG);
+        } catch (final HttpClientErrorException e) {
+            if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
+                pingPhoto(volunteerIdString, PNG);
+            }
+        }
+        System.out.println("Pinged photo: " + volunteerIdString + ".");
+    }
+
+    private synchronized void pingPhoto(final String volunteerIdString, final String photoFormat) {
+        String url = String.format(PHOTOS_TEMPLATE_URL, volunteerIdString, photoFormat);
         System.out.println("Pinging photo: " + volunteerIdString + " to URL: " + url + "...");
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.headForHeaders(url);
-        System.out.println("Pinged photo: " + volunteerIdString + ".");
     }
 
     public void fetchPhotosInThread(Iterable<Volunteer> volunteersToFetch, PhotosZip photosZip, ExecutorService executor) {
